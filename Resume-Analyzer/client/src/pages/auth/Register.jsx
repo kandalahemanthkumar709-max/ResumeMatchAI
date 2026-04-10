@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { register as registerUserThunk } from '../../redux/slices/authSlice';
 
@@ -28,6 +28,8 @@ export default function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(registerSchema),
@@ -109,19 +111,45 @@ export default function Register() {
              {/* Password Input */}
              <div className="space-y-2">
                <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
-               <div className="relative">
-                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                 <input {...register('password')} type="password" className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-950 border border-slate-800 outline-none" placeholder="••••••••" />
-               </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
+                  <input 
+                    {...register('password')} 
+                    type={showPassword ? "text" : "password"} 
+                    className="w-full pl-12 pr-12 py-4 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 outline-none transition-all" 
+                    placeholder="••••••••" 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 focus:outline-none transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                {errors.password && <p className="text-xs text-red-500 ml-1">{errors.password.message}</p>}
              </div>
 
              {/* Confirm Password */}
-             <div className="space-y-2">
-               <label className="text-sm font-medium text-slate-300 ml-1">Confirm Password</label>
-               <input {...register('confirmPassword')} type="password" className="w-full px-4 py-4 rounded-xl bg-slate-950 border border-slate-800 outline-none" placeholder="••••••••" />
-               {errors.confirmPassword && <p className="text-xs text-red-500 ml-1">{errors.confirmPassword.message}</p>}
-             </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">Confirm Password</label>
+                <div className="relative group">
+                  <input 
+                    {...register('confirmPassword')} 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    className="w-full px-4 pr-12 py-4 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 outline-none transition-all" 
+                    placeholder="••••••••" 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 focus:outline-none transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.confirmPassword && <p className="text-xs text-red-500 ml-1 mt-1">{errors.confirmPassword.message}</p>}
+              </div>
           </div>
 
           {/* Submit Button */}

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { login } from '../../redux/slices/authSlice';
 
@@ -22,6 +22,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // FORM CONFIG: useForm handles the inputs, errors, and validation!
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -93,10 +94,17 @@ export default function Login() {
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
               <input 
                 {...register('password')}
-                type="password"
-                className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 outline-none transition-all"
+                type={showPassword ? "text" : "password"}
+                className="w-full pl-12 pr-12 py-4 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 outline-none transition-all"
                 placeholder="••••••••"
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 focus:outline-none transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password && <p className="text-xs text-red-500 ml-1 mt-1">{errors.password.message}</p>}
           </div>
