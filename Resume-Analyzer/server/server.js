@@ -92,7 +92,7 @@ if (process.env.NODE_ENV === 'production') {
 
     // 2. Handle any requests that don't match the API routes
     //    This is crucial for Single Page Apps (SPA) like React.
-    app.get('*', (req, res, next) => {
+    app.get('(.*)', (req, res, next) => {
         // If the request starts with /api, pass it to the error handler (unmatched /api route)
         if (req.originalUrl.startsWith('/api')) {
             return next();
