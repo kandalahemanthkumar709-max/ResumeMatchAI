@@ -54,7 +54,9 @@ const getHtmlTemplate = (title, message, btnText, btnLink) => `
 
 export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, note) => {
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, 
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_PASS, 
@@ -121,7 +123,9 @@ export const queueEmail = async (emailData) => {
  */
 export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTitle, event, coverLetter }) => {
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_PASS,

@@ -43,8 +43,10 @@ export default function Login() {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
-      // 3. ERROR! Handle wrong credentials or missing accounts
-      setError(err.message || err || 'Invalid credentials. Please try again.');
+      // 3. ERROR! Dig out the actual message from the server (e.g., 'Invalid email or password')
+      console.error('Login Error:', err);
+      const errorMessage = typeof err === 'string' ? err : (err.message || err.error || 'Login failed. Please try again.');
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

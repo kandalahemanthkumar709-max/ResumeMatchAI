@@ -49,8 +49,10 @@ export default function Register() {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
-      // 3. ERROR! Handle existing accounts or network errors
-      setError(err.message || err || 'Whoops! Registration failed. Try again.');
+      // 3. ERROR! Dig out the actual message from the server (e.g., 'User already exists')
+      console.error('Registration Error:', err);
+      const errorMessage = typeof err === 'string' ? err : (err.message || err.error || 'Registration failed. Please try again.');
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
