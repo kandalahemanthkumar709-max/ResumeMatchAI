@@ -90,10 +90,10 @@ if (process.env.NODE_ENV === 'production') {
     // 1. Serve static files from the React app's DIST folder
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
-    // 2. Handle any requests that don't match the API routes
-    //    This is crucial for Single Page Apps (SPA) like React.
-    app.get('(.*)', (req, res, next) => {
-        // If the request starts with /api, pass it to the error handler (unmatched /api route)
+    // 2. Fallback: Handle any requests that don't match the API routes
+    //    Serve the React app's index.html for any unknown routes.
+    app.use((req, res, next) => {
+        // If the request is for an API route that doesn't exist, pass to error handler
         if (req.originalUrl.startsWith('/api')) {
             return next();
         }
