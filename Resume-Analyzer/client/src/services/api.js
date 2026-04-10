@@ -2,21 +2,17 @@ import axios from 'axios';
 
 /**
  * API Service - Our Backend Connection
- * It's much cleaner to create a single 'instance' of Axios 
- * instead of importing axios in every component.
+ * Consistent with client/src/api/axios.js
  */
 
 const API = axios.create({
-    // Replace this with your actual server URL 
-    // Usually 'http://127.0.0.1:5000/api'
-    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000',
+    baseURL: import.meta.env.VITE_API_URL || `${window.location.origin}`,
     headers: {
         'Content-Type': 'application/json',
     }
 });
 
 // Interceptor: Adds AUTH TOKEN to every request automatically
-// If the user is logged in, their JWT token will be sent with every call!
 API.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -24,6 +20,20 @@ API.interceptors.request.use((config) => {
     }
     return config;
 }, (error) => {
+    return Promise.reject(error);
+});
+
+// Interceptor: Handle Authentication Errors (e.g., token expired)
+API.interceptors.response.use((response) => {
+    return response;
+}, (error) => {
+    if (error.response && error.response.status === 401) {
+        console.error("Session Expired. Logging out...");
+        localStorage.removeItem('token');
+        if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+        }
+    }
     return Promise.reject(error);
 });
 
