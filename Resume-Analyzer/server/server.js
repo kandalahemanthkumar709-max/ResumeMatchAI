@@ -1,5 +1,6 @@
 import express from 'express';
-import dotenv from 'dotenv'; // Forced restart to apply route fixes
+import dotenv from 'dotenv'; 
+import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
 import colors from 'colors';
@@ -80,9 +81,29 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
+// ---------------------------------------------------------
+// STATIC FILES & PRODUCTION DEPLOYMENT
+// ---------------------------------------------------------
+const __dirname = path.resolve();
+
+if (process.env.NODE_ENV === 'production') {
+    // 1. Serve static files from the React app's DIST folder
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    // 2. Handle any requests that don't match the API routes
+    //    This is crucial for Single Page Apps (SPA) like React.
+    app.get('*', (req, res, next) => {
+        // If the request starts with /api, pass it to the error handler (unmatched /api route)
+        if (req.originalUrl.startsWith('/api')) {
+            return next();
+        }
+        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.send('API is running in development mode...');
+    });
+}
 
 // ERROR HANDLING
 app.use(notFound);
