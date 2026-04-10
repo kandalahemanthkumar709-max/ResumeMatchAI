@@ -38,7 +38,16 @@ const app = express();
 // ---------------------------------------------------------
 
 // 1. HELMET: Sets various HTTP headers to help secure your app.
-app.use(helmet());
+// We relax the policy to allow Google icons and Cloudinary images.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://www.google.com"],
+      "cross-origin-resource-policy": { policy: "cross-origin" }
+    },
+  },
+}));
 
 // 2. CORS - ALLOW FRONTEND TO CONNECT
 app.use(cors({
