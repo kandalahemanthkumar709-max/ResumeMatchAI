@@ -84,11 +84,11 @@ app.use('/api/analytics', analyticsRoutes);
 // ---------------------------------------------------------
 // STATIC FILES & PRODUCTION DEPLOYMENT
 // ---------------------------------------------------------
-const __dirname = path.resolve();
+const rootDir = process.cwd();
 
 if (process.env.NODE_ENV === 'production') {
     // 1. Serve static files from the React app's DIST folder
-    app.use(express.static(path.join(__dirname, '../client/dist')));
+    app.use(express.static(path.join(rootDir, 'client/dist')));
 
     // 2. Fallback: Handle any requests that don't match the API routes
     //    Serve the React app's index.html for any unknown routes.
@@ -97,7 +97,7 @@ if (process.env.NODE_ENV === 'production') {
         if (req.originalUrl.startsWith('/api')) {
             return next();
         }
-        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+        res.sendFile(path.resolve(rootDir, 'client', 'dist', 'index.html'));
     });
 } else {
     app.get('/', (req, res) => {
