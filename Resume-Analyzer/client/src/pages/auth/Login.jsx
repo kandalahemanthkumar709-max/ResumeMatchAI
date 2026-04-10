@@ -119,21 +119,7 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Google OAuth Option */}
-        <div className="mt-8">
-           <div className="relative flex items-center justify-center mb-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-              <span className="relative px-4 text-xs font-medium text-slate-600 bg-slate-900 scale-100">OR CONTINUE WITH</span>
-           </div>
-           
-           <button 
-             onClick={handleGoogleLogin}
-             className="w-full py-4 border border-slate-800 bg-slate-950 hover:bg-slate-900 rounded-xl transition-all flex items-center justify-center gap-3 font-semibold"
-           >
-              <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google logo" />
-              Sign in with Google
-           </button>
-        </div>
+
 
         <p className="mt-8 text-center text-sm text-slate-500">
            New here? <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-bold">Create an account</Link>
