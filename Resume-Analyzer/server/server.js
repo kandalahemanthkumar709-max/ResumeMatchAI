@@ -42,7 +42,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://www.google.com"],
+      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://www.google.com", "https://via.placeholder.com", "https://*.googleusercontent.com"],
     },
   },
   crossOriginResourcePolicy: { policy: "cross-origin" }
