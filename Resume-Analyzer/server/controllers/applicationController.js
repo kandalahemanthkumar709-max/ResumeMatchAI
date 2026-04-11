@@ -103,14 +103,16 @@ export const applyToJob = async (req, res, next) => {
         });
 
         // Send recruiter email (non-blocking)
-        sendRecruiterEmail({
-            to: job.postedBy.email,
-            recruiterName: job.postedBy.name,
-            seekerName: req.user.name,
-            jobTitle: job.title,
-            event: 'new_application',
-            coverLetter: coverLetter
-        }).catch(err => console.error('Recruiter email failed:', err.message));
+        if (job.postedBy && job.postedBy.email) {
+            sendRecruiterEmail({
+                to: job.postedBy.email,
+                recruiterName: job.postedBy.name || 'Recruiter',
+                seekerName: req.user.name || 'A candidate',
+                jobTitle: job.title,
+                event: 'new_application',
+                coverLetter: coverLetter
+            }).catch(err => console.error('Recruiter email failed:', err.message));
+        }
 
         // 5. Notify & Email seeker
         queueEmail({
