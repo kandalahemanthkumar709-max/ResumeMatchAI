@@ -37,7 +37,8 @@ const transporter = nodemailer.createTransport({
     pool: true
 });
 
-// Verify connection on startup
+// Verify connection on startup (DISABLED for Render stability)
+/*
 transporter.verify((error, success) => {
     if (error) {
         console.error('❌ EMAIL CONNECTION ERROR:'.red.bold, error.message);
@@ -45,6 +46,7 @@ transporter.verify((error, success) => {
         console.log('📬 Email System: Ready to deliver'.green.bold);
     }
 });
+*/
 
 /**
  * HTML EMAIL TEMPLATE

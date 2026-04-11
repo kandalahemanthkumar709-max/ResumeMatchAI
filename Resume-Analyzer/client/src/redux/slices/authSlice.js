@@ -38,11 +38,13 @@ export const login = createAsyncThunk(
     }
 );
 
+const hasUrlToken = typeof window !== 'undefined' && window.location.search.includes('token=');
+
 const initialState = {
     token: localStorage.getItem('token'),
     user: null,
     isAuthenticated: false,
-    isLoading: !!localStorage.getItem('token'), // Only load if a token actually exists!
+    isLoading: !!localStorage.getItem('token') || hasUrlToken, // Wait if token is coming from URL
     error: null,
 };
 
