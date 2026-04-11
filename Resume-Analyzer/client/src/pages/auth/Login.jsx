@@ -43,9 +43,10 @@ export default function Login() {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
-      // 3. ERROR! Dig out the actual message from the server response
+      // 3. ERROR! Deep-dig for the actual message string
       console.error('Login Error:', err);
-      const errorMessage = err?.message || err?.error || (typeof err === 'string' ? err : 'Login failed. Please try again.');
+      // Dig into different possible formats (Redux payload, Axios response, or string)
+      const errorMessage = err?.data?.message || err?.message || err?.error || (typeof err === 'string' ? err : 'Login failed. Please try again.');
       setError(errorMessage);
     } finally {
       setIsLoading(false);

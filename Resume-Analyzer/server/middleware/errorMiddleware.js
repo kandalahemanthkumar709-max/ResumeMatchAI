@@ -38,10 +38,11 @@ const sendErrorDev = (err, req, res) => {
     });
 };
 
-// PROD ERROR RESPONSE (Concise)
+// PROD ERROR RESPONSE (Concise but friendly)
 const sendErrorProd = (err, req, res) => {
     // 1. Operational, trusted error: send message to client
-    if (err.isOperational) {
+    // We ALSO allow errors that have a 4xx status code to show their message
+    if (err.isOperational || (err.statusCode && err.statusCode < 500)) {
         return res.status(err.statusCode).json({
             success: false,
             status:  err.status,
@@ -50,7 +51,6 @@ const sendErrorProd = (err, req, res) => {
     }
 
     // 2. Programming or other unknown error: don't leak details
-    // Log for debugging
     console.error('ERROR 💥', err);
     logErrorToFile(err);
 
