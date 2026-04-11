@@ -57,6 +57,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
         host: 'smtp.gmail.com',
         port: 465,
         secure: true, 
+        family: 4, // Forces the connection to use IPv4 instead of IPv6
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_PASS, 
@@ -126,6 +127,7 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
+        family: 4, // Forces the connection to use IPv4 instead of IPv6
         auth: {
             user: process.env.GMAIL_USER,
             pass: process.env.GMAIL_PASS,
