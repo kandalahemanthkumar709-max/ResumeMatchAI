@@ -24,7 +24,18 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
     const formatSalary = () => {
         if (!job.salary?.isVisible) return 'Competitive';
         if (!job.salary?.min && !job.salary?.max) return 'Not disclosed';
+        
         const currency = job.salary.currency || 'USD';
+        
+        // Custom formatting for Indian Rupees (LPA)
+        if (currency === 'INR') {
+            const toLPA = (val) => (val / 100000).toFixed(1).replace(/\.0$/, '') + ' LPA';
+            if (job.salary.min && job.salary.max) {
+                return `₹${toLPA(job.salary.min)} – ${toLPA(job.salary.max)}`;
+            }
+            return `From ₹${toLPA(job.salary.min || job.salary.max)}`;
+        }
+
         const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency', currency, maximumFractionDigits: 0,
         });
@@ -73,13 +84,12 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
 
             {/* Company info */}
             <div className="flex items-center gap-3 mb-4">
-                {job.companyLogo ? (
-                    <img src={job.companyLogo} alt={job.company} className="w-11 h-11 rounded-xl object-cover bg-slate-800" />
-                ) : (
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                        <Briefcase size={18} className="text-slate-400" />
-                    </div>
-                )}
+                <img 
+                    src={job.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=0ea5e9&color=fff&bold=true`} 
+                    alt={job.company} 
+                    className="w-11 h-11 rounded-xl object-cover bg-slate-800 border border-slate-700/50 shadow-sm"
+                    onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=64748b&color=fff`; }}
+                />
                 <div>
                     <p className="text-white font-semibold text-sm leading-tight">{job.company}</p>
                     <p className="text-slate-500 text-xs">{job.location}</p>

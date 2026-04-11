@@ -159,7 +159,18 @@ export function JobDetail() {
     const formatSalary = () => {
         if (!job.salary?.isVisible) return 'Competitive salary';
         if (!job.salary?.min && !job.salary?.max) return 'Salary not specified';
+        
         const currency = job.salary.currency || 'USD';
+
+        // Custom formatting for Indian Rupees (LPA)
+        if (currency === 'INR') {
+            const toLPA = (val) => (val / 100000).toFixed(1).replace(/\.0$/, '') + ' LPA';
+            if (job.salary.min && job.salary.max) {
+                return `₹${toLPA(job.salary.min)} – ${toLPA(job.salary.max)}`;
+            }
+            return `From ₹${toLPA(job.salary.min || job.salary.max)}`;
+        }
+
         const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency', currency, maximumFractionDigits: 0,
         });
@@ -192,12 +203,13 @@ export function JobDetail() {
                         className="bg-slate-900/40 border border-slate-800 p-8 rounded-3xl"
                     >
                         <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
-                            <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0 overflow-hidden">
-                                {job.companyLogo ? (
-                                    <img src={job.companyLogo} alt={job.company} className="w-full h-full object-cover" />
-                                ) : (
-                                    <Building2 size={32} className="text-slate-500" />
-                                )}
+                            <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0 overflow-hidden shadow-xl shadow-slate-950/50">
+                                <img 
+                                    src={job.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=0ea5e9&color=fff&bold=true&size=128`} 
+                                    alt={job.company} 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=64748b&color=fff&size=128`; }}
+                                />
                             </div>
                             <div className="flex-1">
                                 <h1 className="text-3xl font-bold text-white mb-2">{job.title}</h1>
@@ -297,11 +309,22 @@ export function JobDetail() {
                             <div>
                                 <p className="text-xs text-slate-500 uppercase font-bold mb-3 tracking-widest">Required Skills</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {job.structuredData?.required_skills?.map((skill, i) => (
-                                        <span key={i} className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-xs font-medium">
-                                            {skill}
-                                        </span>
-                                    ))}
+                                    {job.structuredData?.required_skills?.map((skill, i) => {
+                                        const isMatched = matchData?.matchedSkills?.some(s => s.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(s.toLowerCase()));
+                                        return (
+                                            <span 
+                                                key={i} 
+                                                className={`px-3 py-1 border rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
+                                                    isMatched 
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5' 
+                                                    : 'bg-cyan-500/5 text-cyan-400/70 border-cyan-500/10'
+                                                }`}
+                                            >
+                                                {isMatched && <CheckCircle2 size={12} className="text-emerald-500" />}
+                                                {skill}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -350,9 +373,25 @@ export function JobDetail() {
                                             {matchData.overallScore >= 80 ? 'Perfect Match' : matchData.overallScore >= 60 ? 'Good Match' : 'Possible Match'}
                                         </span>
                                     </div>
-                                    <p className="text-slate-400 text-xs leading-relaxed">
-                                        Your {matchData.resumeLabel || 'resume'} matches {Math.round(matchData.overallScore)}% of this job's criteria.
-                                    </p>
+                                    <div className="space-y-4">
+                                        <p className="text-slate-400 text-xs leading-relaxed">
+                                            Your {matchData.resumeLabel || 'resume'} matches the following criteria:
+                                        </p>
+                                        
+                                        {/* Quick Skill Match Summary */}
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {matchData.matchedSkills?.map(s => (
+                                                <span key={s} className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[10px] flex items-center gap-1">
+                                                    <CheckCircle2 size={10} /> {s}
+                                                </span>
+                                            ))}
+                                            {matchData.missingSkills?.map(s => (
+                                                <span key={s} className="px-2 py-0.5 bg-red-500/10 text-red-500/60 rounded text-[10px] flex items-center gap-1 line-through">
+                                                    {s}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </>
                             ) : (
                                 <div className="py-2">

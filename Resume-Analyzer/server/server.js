@@ -1,8 +1,8 @@
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
 import express from 'express';
 import dotenv from 'dotenv'; 
-import dns from 'dns';
-// Force IPv4 globally to fix Render "ENETUNREACH" issues with Gmail/Cloudinary
-dns.setDefaultResultOrder('ipv4first');
+dotenv.config({ quiet: true });
 import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -25,8 +25,6 @@ import configurePassport from './config/passport.js';
 import passport from 'passport';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
-// 1. Load environmental variables FIRST
-dotenv.config({ quiet: true });
 
 // 2. Setup Passport Config
 configurePassport();

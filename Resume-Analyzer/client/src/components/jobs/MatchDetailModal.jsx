@@ -35,7 +35,14 @@ export function MatchDetailModal({ match, onClose, onApply, isApplying }) {
         }
     };
 
-    const { breakdown, matchedSkills, missingSkills, partialSkills, reasoning, overallScore, job } = match;
+    const { breakdown, matchedSkills = [], missingSkills = [], partialSkills = [], reasoning, overallScore, job } = match;
+
+    // FAIL-SAFE: If structuredData is missing, derive requirements from the match result itself
+    const allRequirements = job?.structuredData?.required_skills || [
+        ...matchedSkills,
+        ...missingSkills,
+        ...partialSkills
+    ];
 
     const categories = [
         { label: 'Skills',      value: breakdown.skillScore,      color: 'bg-emerald-500' },
@@ -163,7 +170,12 @@ export function MatchDetailModal({ match, onClose, onApply, isApplying }) {
 
                         {/* 3. Skills Analysis */}
                         <section className="space-y-6">
-                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Skills Analysis</h3>
+                            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                                <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">AI Skills Analysis</h3>
+                                <div className="text-[10px] text-slate-500 px-2 py-0.5 bg-slate-800 rounded">
+                                    {allRequirements.length} Total Requirements
+                                </div>
+                            </div>
                             
                             <div className="space-y-4">
                                 {/* Matched */}
