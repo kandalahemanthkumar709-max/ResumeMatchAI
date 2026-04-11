@@ -17,17 +17,23 @@ import dns from 'dns';
  */
 
 // Create the transporter ONCE for the whole application
-// Using service: 'gmail' is the most robust way for Render to talk to Google
-// Using service: 'gmail' is the most robust way for Render to talk to Google
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Use STARTTLS (Port 587) - Much more stable on Render
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS, 
     },
-    connectionTimeout: 10000, // 10 seconds timeout
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    // FORCE IPv4 ONLY - This is the fix for ENETUNREACH
+    lookup: (hostname, options, callback) => {
+        dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+            callback(err, address, family);
+        });
+    },
+    connectionTimeout: 20000, // 20 seconds
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
     pool: true
 });
 
