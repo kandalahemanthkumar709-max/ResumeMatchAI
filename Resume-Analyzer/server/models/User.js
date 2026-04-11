@@ -87,6 +87,8 @@ userSchema.pre('save', async function() {
  * password when they try to log in.
  */
 userSchema.methods.matchPassword = async function(enteredPassword) {
+    // Google-only users have no password — reject email/password login attempts
+    if (!this.password) return false;
     // bcrypt.compare checks if the plain text password matches the hashed one.
     return await bcrypt.compare(enteredPassword, this.password);
 };
