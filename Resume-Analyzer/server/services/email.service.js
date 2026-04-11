@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 
 /**
  * EMAIL SERVICE
@@ -21,11 +22,13 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false, // Use STARTTLS
+    lookup: (hostname, options, callback) => {
+        dns.lookup(hostname, { family: 4 }, callback);
+    },
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS, 
     },
-    // Addition for stability on cloud providers
     pool: true,
     maxConnections: 5,
     maxMessages: 100
