@@ -200,7 +200,7 @@ export const setDefaultResume = async (req, res, next) => {
         const resume = await Resume.findOneAndUpdate(
             { _id: req.params.id, userId: req.user._id },
             { $set: { isDefault: true } },
-            { new: true } // new: true → return the UPDATED document, not the old one
+            { returnDocument: 'after' } // Updated from { new: true } to avoid deprecation warning
         );
 
         if (!resume) {
