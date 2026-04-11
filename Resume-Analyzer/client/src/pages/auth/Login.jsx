@@ -54,8 +54,16 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // Dynamically choose between production and local API URL
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Determine the base API URL
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const productionApiUrl = 'https://resumematchai-m9tq.onrender.com';
+    const localApiUrl = 'http://localhost:5000';
+    
+    const apiUrl = isLocal ? localApiUrl : productionApiUrl;
+    
+    // Log the redirection for debugging (visible in browser console)
+    console.log(`Redirecting to: ${apiUrl}/api/auth/google`);
+    
     window.location.href = `${apiUrl}/api/auth/google`;
   };
 

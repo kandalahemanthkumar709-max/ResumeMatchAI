@@ -18,20 +18,17 @@ import dns from 'dns';
 
 // Create the transporter ONCE for the whole application
 // Using service: 'gmail' is the most robust way for Render to talk to Google
+// Using service: 'gmail' is the most robust way for Render to talk to Google
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS
-    lookup: (hostname, options, callback) => {
-        dns.lookup(hostname, { family: 4 }, callback);
-    },
+    service: 'gmail',
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS, 
     },
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 100
+    connectionTimeout: 10000, // 10 seconds timeout
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    pool: true
 });
 
 // Verify connection on startup
