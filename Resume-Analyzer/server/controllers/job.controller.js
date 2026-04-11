@@ -221,7 +221,7 @@ export const getJobById = async (req, res, next) => {
         // Atomically add to set and then sync viewCount
         const updatedJob = await Job.findByIdAndUpdate(req.params.id, { 
             $addToSet: { viewedByIPs: viewerId }
-        }, { new: true });
+        }, { returnDocument: 'after' });
         
         // Safety check to prevent crash if updatedJob is null
         if (updatedJob && updatedJob.viewedByIPs.length > updatedJob.viewCount) {
