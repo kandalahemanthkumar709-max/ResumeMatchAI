@@ -15,10 +15,30 @@ import nodemailer from 'nodemailer';
  * 5. Update your .env with GMAIL_USER and GMAIL_PASS (the 16-character code)
  */
 
+// Create the transporter ONCE for the whole application
+// Using service: 'gmail' is the most robust way for Render to talk to Google
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS, 
+    },
+    // Diagnostic settings: If it fails, check your Render logs!
+    logger: true,
+    debug: true
+});
+
+// Verify connection on startup
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('❌ EMAIL CONNECTION ERROR:'.red.bold, error.message);
+    } else {
+        console.log('📬 Email System: Ready to deliver'.green.bold);
+    }
+});
+
 /**
  * HTML EMAIL TEMPLATE
- * Why Tables? Email clients like Outlook don't support modern CSS (flex, grid).
- * Inline CSS ONLY! External stylesheets are ignored.
  */
 const getHtmlTemplate = (title, message, btnText, btnLink) => `
     <div style="font-family: sans-serif; background-color: #f4f7f9; padding: 20px;">
@@ -53,19 +73,9 @@ const getHtmlTemplate = (title, message, btnText, btnLink) => `
 `;
 
 export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, note) => {
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use STARTTLS (standard for port 587)
-        family: 4, // Forces IPv4
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS, 
-        },
-    });
-
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
         console.error('❌ EMAIL ERROR: GMAIL_USER or GMAIL_PASS is missing in .env');
+        return;
     }
 
     const statusMessages = {
@@ -79,7 +89,6 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
 
     let fullMessage = statusMessages[status] || `Your application status has been updated to ${status}.`;
     
-    // Add the personal recruiter note if provided
     if (note) {
         fullMessage += `<br/><br/><div style="padding: 15px; background-color: #f1f5f9; border-left: 4px solid #06b6d4; color: #334155; font-style: italic;">
             <strong>Message from Recruiter:</strong><br/>
@@ -107,33 +116,11 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
     }
 };
 
-/**
- * EMAIL QUEUE CONCEPT
- * In a production app, you would save these emails to a "Queue" (like RabbitMQ or Bull)
- * and have a separate process send them. 
- * This ensures your API remains fast even if Gmail's servers are slow.
- */
 export const queueEmail = async (emailData) => {
-    // For now, we send synchronously, but this is the hook for a real Queue
     await sendStatusUpdateEmail(emailData.to, emailData.name, emailData.jobTitle, emailData.status, emailData.note);
 };
 
-/**
- * RECRUITER EMAIL 
- * Sends email to the recruiter about candidate activity on their job posting.
- */
 export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTitle, event, coverLetter }) => {
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use STARTTLS (standard for port 587)
-        family: 4, // Forces IPv4
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS,
-        },
-    });
-
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
         console.warn('⚠️  Recruiter email skipped: GMAIL credentials missing in .env');
         return;
@@ -161,7 +148,7 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
     };
 
     const template = events[event];
-    if (!template) return;
+    if (!template || !to) return;
 
     const mailOptions = {
         from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,

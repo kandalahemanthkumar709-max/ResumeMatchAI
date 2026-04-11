@@ -1,5 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv'; 
+import dns from 'dns';
+// Force IPv4 globally to fix Render "ENETUNREACH" issues with Gmail/Cloudinary
+dns.setDefaultResultOrder('ipv4first');
 import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
