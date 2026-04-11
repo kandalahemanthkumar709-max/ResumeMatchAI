@@ -1,1 +1,0 @@
-const mongoose = require('mongoose'); mongoose.connect('mongodb://localhost:27017/resume-analyzer').then(async () => { const db = mongoose.connection.db; const jobs = await db.collection('jobs').find({ title: /Frontend Developer/i }).toArray(); jobs.forEach(j => console.log('Job:', j.title, '| Views:', j.viewCount, '| IPs:', j.viewedByIPs)); process.exit(0); });

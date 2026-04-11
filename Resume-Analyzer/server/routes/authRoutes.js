@@ -51,11 +51,14 @@ router.get('/google/callback', passport.authenticate('google', {
     session: false, // We're using JWT, so no need for server "sessions"
     failureRedirect: '/login' 
 }), (req, res) => {
-    // Generate a JWT for this user and send them to the Dashboard!
+    // 1. Generate a JWT for this user
     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     
-    // Redirect to frontend with the token for local storage!
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard?token=${token}`);
+    // 2. SMART REDIRECT: Send user to the correct dashboard based on their role
+    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const dynamicPath = req.user.role === 'recruiter' ? '/recruiter/dashboard' : '/dashboard';
+    
+    res.redirect(`${baseUrl}${dynamicPath}?token=${token}`);
 });
 
 export default router;

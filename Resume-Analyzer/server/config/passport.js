@@ -10,9 +10,8 @@ import colors from 'colors';
 
 const configurePassport = () => {
     // Check if keys are present. If not, don't initialize Google Strategy.
-    // This prevents the server from crashing during local development!
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-        console.warn('⚠️ Google OAuth keys are missing in .env - Social login is disabled.'.red.bold);
+        console.warn('⚠️  GOOGLE AUTH: Missing Client ID/Secret. Google Login is DISABLED.'.yellow.bold);
         return;
     }
 
@@ -22,8 +21,8 @@ const configurePassport = () => {
         // API & Services -> Credentials -> Create OAuth 2.0 Client ID
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "/api/auth/google/callback",
-        proxy: true // Required for Heroku/Cloud hosting
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback",
+        proxy: true 
     },
     async (accessToken, refreshToken, profile, done) => {
         // This is the "Verify Function". 

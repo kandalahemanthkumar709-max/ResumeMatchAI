@@ -5,7 +5,6 @@ import Resume from '../models/Resume.js';
 import MatchCache from '../models/MatchCache.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
-import { getCachedData, setCachedData } from '../config/redis.js';
 
 // ─── SEEKER ANALYTICS (Aggregations) ──────────────────────────────────────────
 
@@ -15,13 +14,6 @@ import { getCachedData, setCachedData } from '../config/redis.js';
  */
 export const getSeekerAnalytics = catchAsync(async (req, res, next) => {
     const seekerId = req.user._id;
-    const cacheKey = `seeker_stats:${seekerId}`;
-
-    // 1. Try Cache First (Cache-aside)
-    const cached = await getCachedData(cacheKey);
-    if (cached) {
-        return res.json({ success: true, data: cached });
-    }
 
     // 2. Fetch from DB (Cache Miss)
     // Total Resumes & Avg ATS Score
@@ -106,8 +98,6 @@ export const getSeekerAnalytics = catchAsync(async (req, res, next) => {
         timeline: appsOverTime
     };
 
-    // 3. Save to Cache (TTL = 1 hour)
-    await setCachedData(cacheKey, dashboardData, 3600);
 
     res.json({
         success: true,
@@ -127,12 +117,6 @@ export const getRecruiterAnalytics = catchAsync(async (req, res, next) => {
     }
 
     const recruiterId = req.user._id;
-    const cacheKey = `recruiter_stats:${recruiterId}`;
-
-    const cached = await getCachedData(cacheKey);
-    if (cached) {
-        return res.json({ success: true, data: cached });
-    }
 
     // 1. Job Stats (Active vs Closed)
     const jobStats = await Job.aggregate([
@@ -201,7 +185,6 @@ export const getRecruiterAnalytics = catchAsync(async (req, res, next) => {
         funnel
     };
 
-    await setCachedData(cacheKey, dashboardData, 3600);
 
     res.json({
         success: true,

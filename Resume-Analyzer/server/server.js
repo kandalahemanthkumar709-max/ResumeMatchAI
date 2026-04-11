@@ -26,7 +26,7 @@ import passport from 'passport';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // 1. Load environmental variables FIRST
-dotenv.config();
+dotenv.config({ quiet: true });
 
 // 2. Setup Passport Config
 configurePassport();
@@ -57,7 +57,10 @@ app.use(cors({
     credentials: true
 }));
 
-// 3. BODY PARSER
+// 4. CLEAN LOGS - Handle common browser requests
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+// 5. BODY PARSER
 app.use(express.json({ limit: '10kb' }));
 
 // 4. NOSQL INJECTION PROTECTION

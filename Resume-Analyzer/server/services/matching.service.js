@@ -19,22 +19,25 @@ import { generateMatchReasoning } from './ai.service.js';
 
 // Common Tech Skill Synonyms/Groups for better matching
 const SKILL_SYNONYMS = {
-    'python': ['py', 'python3', 'pythonscript'],
-    'javascript': ['js', 'ecmascript'],
-    'typescript': ['ts'],
-    'node.js': ['nodejs', 'node'],
-    'react': ['reactjs', 'react.js', 'react native'],
+    'python': ['py', 'python3', 'pythonscript', 'cpython'],
+    'javascript': ['js', 'ecmascript', 'es6', 'es7', 'javascriptes6', 'javascriptes7', 'js-es6'],
+    'typescript': ['ts', 'tsx'],
+    'node.js': ['nodejs', 'node', 'node-js'],
+    'react': ['reactjs', 'react.js', 'react-js', 'react native', 'jsx'],
+    'mongodb': ['mongo', 'mongoose', 'nosql-database'],
+    'express': ['expressjs', 'express.js', 'express-js'],
+    'tailwind css': ['tailwind', 'tailwindcss', 'utility-css'],
     'machine learning': ['ml', 'statistical modeling', 'predictive modeling'],
     'deep learning': ['dl', 'neural networks', 'cnn', 'rnn'],
     'artificial intelligence': ['ai', 'agentic ai', 'artificial-intelligence'],
     'natural language processing': ['nlp', 'llm', 'large language models', 'transformers', 'bert', 'gpt'],
-    'sql': ['postgresql', 'mysql', 'mssql', 'sqlite', 'relational database'],
+    'sql': ['postgresql', 'mysql', 'mssql', 'sqlite', 'relational database', 'postgres'],
     'nosql': ['mongodb', 'cassandra', 'redis', 'dynamodb'],
     'cloud': ['aws', 'gcp', 'azure', 'amazon web services', 'google cloud'],
     'docker': ['containerization', 'kubernetes', 'k8s', 'containers'],
     'pytorch': ['torch', 'torchvision', 'torchaudio'],
     'tensorflow': ['tf', 'keras'],
-    'rest apis': ['restful', 'api design', 'json apis'],
+    'rest apis': ['restful', 'api design', 'json apis', 'rest-apis', 'restful-apis'],
 };
 
 /**
@@ -58,8 +61,8 @@ export const calculateSkillScore = (resumeSkills = [], jobRequired = [], jobNice
         // Check synonyms
         for (const [canonical, synonyms] of Object.entries(SKILL_SYNONYMS)) {
             const allInGroup = [canonical, ...synonyms].map(clean);
-            if (allInGroup.includes(cleanReq)) {
-                if (resumeList.some(rs => allInGroup.includes(rs))) {
+            if (allInGroup.some(member => member === cleanReq || member.includes(cleanReq) || cleanReq.includes(member))) {
+                if (resumeList.some(rs => allInGroup.some(member => member === rs || member.includes(rs) || rs.includes(member)))) {
                     return 'exact'; 
                 }
             }

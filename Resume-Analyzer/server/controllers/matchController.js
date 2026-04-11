@@ -36,7 +36,7 @@ export const getMatchesForResume = async (req, res, next) => {
         // Populate job details (we don't store full job in cache, just ID)
         const populated = await Promise.all(filtered.map(async (m) => {
             const result = m.toObject();
-            result.job = await Job.findById(m.jobId).select('title company location locationType jobType companyLogo requirements description');
+            result.job = await Job.findById(m.jobId).select('title company location locationType jobType companyLogo requirements description structuredData');
             return result;
         }));
 
@@ -79,6 +79,7 @@ export const getMatchesForJob = async (req, res, next) => {
         const populated = await Promise.all(filtered.map(async (m) => {
             const result = m.toObject();
             result.resume = await Resume.findById(m.resumeId).select('label userId originalName');
+            result.job = job; // Attach the already fetched job object
             return result;
         }));
 
@@ -98,7 +99,10 @@ export const getSingleMatch = async (req, res, next) => {
         if (!resume) throw new Error('Resume not found');
 
         const match = await getOrCreateMatch(resume.userId, resumeId, jobId);
-        res.json({ success: true, data: match });
+        const result = match.toObject();
+        result.job = await Job.findById(jobId).select('title company location locationType jobType companyLogo requirements description structuredData');
+        
+        res.json({ success: true, data: result });
     } catch (error) {
         next(error);
     }
