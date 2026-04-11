@@ -43,9 +43,9 @@ export default function Login() {
         navigate('/dashboard', { replace: true });
       }
     } catch (err) {
-      // 3. ERROR! Dig out the actual message from the server (e.g., 'Invalid email or password')
+      // 3. ERROR! Dig out the actual message from the server response
       console.error('Login Error:', err);
-      const errorMessage = typeof err === 'string' ? err : (err.message || err.error || 'Login failed. Please try again.');
+      const errorMessage = err?.message || err?.error || (typeof err === 'string' ? err : 'Login failed. Please try again.');
       setError(errorMessage);
     } finally {
       setIsLoading(false);

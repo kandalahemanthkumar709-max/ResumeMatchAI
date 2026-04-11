@@ -92,7 +92,9 @@ export function PostJob() {
                 navigate('/recruiter/dashboard');
             }, 2500);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to post job. Please try again.');
+            console.error('Job Posting Error:', err);
+            const msg = err.response?.data?.message || err.message || 'Failed to post job. Please try again.';
+            setError(msg);
             setAiProcessing(false);
         } finally {
             setSubmitting(false);
