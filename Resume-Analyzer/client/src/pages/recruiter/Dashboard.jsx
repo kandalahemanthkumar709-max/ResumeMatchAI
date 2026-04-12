@@ -110,115 +110,107 @@ export function RecruiterDashboard() {
                 <StatCard label="Conversion" value={`${stats?.totalViews > 0 ? Math.min(((stats.totalApps / stats.totalViews) * 100), 100).toFixed(1) : '0'}%`} icon={<BarChart3 size={20} />} trend="views → apps" trendUp={true} color="bg-purple-500/10 text-purple-400" />
             </div>
 
-            {/* Jobs List */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden">
-                <div className="p-6 border-b border-slate-800 bg-slate-900/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-lg font-bold text-white">My Postings</h2>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                        <input type="text" placeholder="Search postings..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 pr-4 py-2 bg-slate-950/50 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500" />
-                    </div>
-                </div>
+            {/* Jobs List - Detailed Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {(() => {
+                    const filtered = jobs.filter(job => 
+                        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        job.locationType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        job.jobType?.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+                    return filtered.length === 0 ? (
+                        <div className="lg:col-span-2 p-20 text-center bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-[3rem]">
+                            <p className="text-slate-500 font-bold italic">
+                                {searchQuery ? `No jobs matching "${searchQuery}"` : 'No jobs posted yet. Start by clicking "Post New Job".'}
+                            </p>
+                        </div>
+                    ) : (
+                        filtered.map(job => (
+                            <motion.div 
+                                key={job._id}
+                                layout
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2.5rem] flex flex-col justify-between gap-6 hover:border-slate-700 transition-all group"
+                            >
+                                <div className="space-y-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner">
+                                                <Briefcase size={26} className="text-cyan-500" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-black text-white group-hover:text-cyan-400 transition-colors">{job.title}</h3>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <StatusBadge status={job.status} />
+                                                    <p className="text-[10px] text-slate-500 uppercase font-black flex items-center gap-1">
+                                                        <Calendar size={10} /> {new Date(job.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-2" title="Views">
+                                                <Eye size={12} className="text-emerald-500" />
+                                                <span className="text-xs font-black text-white">{job.viewCount}</span>
+                                            </div>
+                                            <div className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-2" title="Applicants">
+                                                <Users size={12} className="text-purple-500" />
+                                                <span className="text-xs font-black text-white">{job.applicationCount}</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-800 bg-slate-950/20">
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Role Info</th>
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Applicants</th>
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Views</th>
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Created</th>
-                                <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(() => {
-                                const filtered = jobs.filter(job => 
-                                    job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    job.locationType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    job.jobType?.toLowerCase().includes(searchQuery.toLowerCase())
-                                );
-                                return filtered.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="p-20 text-center text-slate-500 italic">
-                                        {searchQuery ? `No jobs matching "${searchQuery}"` : 'No jobs posted yet. Start by clicking "Post New Job".'}
-                                    </td>
-                                </tr>
-                            ) : (
-                                filtered.map(job => (
-                                    <tr key={job._id} className="border-b border-slate-800/50 hover:bg-slate-800/10 transition-colors">
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0">
-                                                    <Briefcase size={18} className="text-slate-400" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-white font-bold truncate">{job.title}</p>
-                                                    <p className="text-slate-500 text-xs">{job.locationType} • {job.jobType}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <StatusBadge status={job.status} />
-                                        </td>
-                                        <td className="p-6 text-center">
-                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 rounded-lg text-white font-bold text-sm">
-                                                <Users size={12} className="text-cyan-400" />
-                                                {job.applicationCount}
-                                            </div>
-                                        </td>
-                                        <td className="p-6 text-center">
-                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 rounded-lg text-white font-bold text-sm">
-                                                <Eye size={12} className="text-emerald-400" />
-                                                {job.viewCount}
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <p className="text-slate-400 text-xs flex items-center gap-1.5">
-                                                <Calendar size={12} />
-                                                {new Date(job.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                                            </p>
-                                        </td>
-                                        <td className="p-6 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button 
-                                                    onClick={() => navigate(`/recruiter/jobs/${job._id}/candidates`)}
-                                                    className="p-2 text-slate-500 hover:text-purple-400 bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-purple-500/30"
-                                                    title="View AI Ranked Candidates"
-                                                >
-                                                    <Users size={16} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => navigate(`/jobs/${job._id}`)}
-                                                    className="p-2 text-slate-500 hover:text-cyan-400 bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-cyan-500/30"
-                                                    title="View Public Link"
-                                                >
-                                                    <ExternalLink size={16} />
-                                                </button>
-                                                <button 
-                                                    className="p-2 text-slate-500 hover:text-white bg-slate-800 rounded-lg transition-colors border border-transparent"
-                                                    title="Edit Post"
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleCloseJob(job._id)}
-                                                    disabled={job.status === 'closed' || deletingId === job._id}
-                                                    className="p-2 text-slate-500 hover:text-red-400 bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-red-500/30 disabled:opacity-30"
-                                                    title="Close Posting"
-                                                >
-                                                    {deletingId === job._id ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            );
-                            })()}
-                        </tbody>
-                    </table>
-                </div>
+                                    {/* Job Fields Chips */}
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        <span className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-black uppercase text-slate-400">
+                                            {job.jobType}
+                                        </span>
+                                        <span className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-black uppercase text-slate-400">
+                                            {job.locationType}
+                                        </span>
+                                        <span className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-black uppercase text-slate-400">
+                                            {job.location}
+                                        </span>
+                                        <span className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-black uppercase text-cyan-500">
+                                            {job.salary?.isVisible ? `${job.salary.min / 100000}L - ${job.salary.max / 100000}L ${job.salary.currency}` : 'Competitive'}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed italic">
+                                        "{job.description.substring(0, 100)}..."
+                                    </p>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-800/50">
+                                    <button 
+                                        onClick={() => navigate(`/recruiter/jobs/${job._id}/candidates`)}
+                                        className="flex flex-col items-center justify-center p-3 sm:flex-row sm:gap-2 bg-slate-950 border border-slate-800 rounded-2xl text-white font-bold text-xs hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
+                                    >
+                                        <Users size={14} className="text-purple-500 mb-1 sm:mb-0" />
+                                        <span>Candidates</span>
+                                    </button>
+                                    <button 
+                                        onClick={() => navigate(`/recruiter/jobs/${job._id}/edit`)}
+                                        className="flex flex-col items-center justify-center p-3 sm:flex-row sm:gap-2 bg-slate-950 border border-slate-800 rounded-2xl text-white font-bold text-xs hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all"
+                                    >
+                                        <Edit2 size={14} className="text-cyan-500 mb-1 sm:mb-0" />
+                                        <span>Edit Job</span>
+                                    </button>
+                                    <button 
+                                        onClick={() => handleCloseJob(job._id)}
+                                        disabled={job.status === 'closed' || deletingId === job._id}
+                                        className="flex flex-col items-center justify-center p-3 sm:flex-row sm:gap-2 bg-slate-950 border border-slate-800 rounded-2xl text-white font-bold text-xs hover:border-red-500/50 hover:bg-red-500/5 transition-all disabled:opacity-20"
+                                    >
+                                        {deletingId === job._id ? <Loader2 size={14} className="animate-spin mb-1 sm:mb-0" /> : <XCircle size={14} className="text-red-500 mb-1 sm:mb-0" />}
+                                        <span>{job.status === 'closed' ? 'Closed' : 'Close'}</span>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))
+                    );
+                })()}
             </div>
 
         </div>

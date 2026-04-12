@@ -424,8 +424,8 @@ export function JobDetail() {
                         </div>
                     )}
 
-                    {/* Hiring Manager Card */}
-                    {job.postedBy && (
+                    {/* Hiring Manager Card - Only show to others, not the poster */}
+                    {job.postedBy && job.postedBy._id?.toString() !== user?._id?.toString() && (
                         <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl">
                             <h3 className="text-white font-bold mb-4 flex items-center gap-2">
                                 <Mail size={18} className="text-cyan-400" />

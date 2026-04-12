@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
     Briefcase, 
     Building2, 
@@ -12,7 +12,8 @@ import {
     ArrowRight,
     Loader2,
     Zap,
-    AlertCircle
+    AlertCircle,
+    Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
@@ -20,15 +21,15 @@ import API from '../../services/api';
 /**
  * PostJob Page (Recruiter)
  * 
- * Multi-step form to post a new job.
- * Step 1: Basic Info (Title, Company, Location)
- * Step 2: Role Details (Type, Location Type, Salary)
- * Step 3: Description & Requirements (Manual Input)
- * Step 4: Preview & Publish
+ * Multi-step form to post a new job OR edit an existing one.
  */
 export function PostJob() {
     const navigate = useNavigate();
+    const { jobId } = useParams();
+    const isEditing = !!jobId;
+
     const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(isEditing);
     const [submitting, setSubmitting] = useState(false);
     const [aiProcessing, setAiProcessing] = useState(false);
     const [error, setError] = useState(null);
@@ -51,6 +52,41 @@ export function PostJob() {
             isVisible: true
         }
     });
+
+    useEffect(() => {
+        if (isEditing) {
+            fetchJobData();
+        }
+    }, [jobId]);
+
+    const fetchJobData = async () => {
+        try {
+            const { data } = await API.get(`/api/jobs/${jobId}`);
+            if (data.success) {
+                const job = data.data;
+                setFormData({
+                    title: job.title || '',
+                    company: job.company || '',
+                    companyLogo: job.companyLogo || '',
+                    location: job.location || '',
+                    locationType: job.locationType || 'remote',
+                    jobType: job.jobType || 'full-time',
+                    description: job.description || '',
+                    requirements: job.requirements || '',
+                    salary: {
+                        min: job.salary?.min || '',
+                        max: job.salary?.max || '',
+                        currency: job.salary?.currency || 'USD',
+                        isVisible: job.salary?.isVisible ?? true
+                    }
+                });
+            }
+        } catch (err) {
+            setError('Failed to load job data for editing.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleNext = () => setStep(prev => Math.min(prev + 1, 4));
     const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
@@ -80,20 +116,24 @@ export function PostJob() {
         setSubmitting(true);
         setError(null);
         
-        // Show AI processing animation
-        setAiProcessing(true);
+        // Only show AI processing if it's a new job or description changed significantly
+        // For simplicity, we'll show it based on isEditing
+        if (!isEditing) setAiProcessing(true);
 
         try {
-            const { data } = await API.post('/api/jobs', formData);
+            if (isEditing) {
+                await API.put(`/api/jobs/${jobId}`, formData);
+            } else {
+                await API.post('/api/jobs', formData);
+            }
             setSuccess(true);
             
-            // Stay on "Success" page momentarily before navigating
             setTimeout(() => {
                 navigate('/recruiter/dashboard');
             }, 2500);
         } catch (err) {
             console.error('Job Posting Error:', err);
-            const msg = err.response?.data?.message || err.message || 'Failed to post job. Please try again.';
+            const msg = err.response?.data?.message || err.message || 'Failed to save job. Please try again.';
             setError(msg);
             setAiProcessing(false);
         } finally {
@@ -101,21 +141,14 @@ export function PostJob() {
         }
     };
 
-    // Step Indicator
-    const StepIndicator = () => (
-        <div className="flex items-center justify-center gap-4 mb-10">
-            {[1, 2, 3, 4].map(s => (
-                <div key={s} className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all
-                        ${s === step ? 'bg-cyan-500 text-slate-950 scale-110 shadow-lg shadow-cyan-500/20' : 
-                          s < step ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500'}`}>
-                        {s < step ? <CheckCircle2 size={20} /> : s}
-                    </div>
-                    {s < 4 && <div className={`w-12 h-0.5 mx-2 ${s < step ? 'bg-emerald-500' : 'bg-slate-800'}`} />}
-                </div>
-            ))}
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <Loader2 size={40} className="text-cyan-500 animate-spin mb-4" />
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Loading Job Data...</p>
+            </div>
+        );
+    }
 
     if (success) {
         return (
@@ -123,8 +156,8 @@ export function PostJob() {
                 <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-24 h-24 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6 border border-emerald-500/20">
                     <CheckCircle2 size={48} />
                 </motion.div>
-                <h1 className="text-3xl font-bold text-white mb-2">Job Posted Successfully!</h1>
-                <p className="text-slate-400 mb-8">AI has structured your job and it's now live for applicants.</p>
+                <h1 className="text-3xl font-bold text-white mb-2">Job {isEditing ? 'Updated' : 'Posted'} Successfully!</h1>
+                <p className="text-slate-400 mb-8">{isEditing ? 'Changes have been saved.' : 'AI has structured your job and it\'s now live for applicants.'}</p>
                 <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
                     <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 2.5 }} className="h-full bg-cyan-500" />
                 </div>
@@ -136,8 +169,8 @@ export function PostJob() {
     return (
         <div className="max-w-3xl mx-auto px-6 py-10">
             <header className="mb-10 text-center">
-                <h1 className="text-3xl font-bold text-white mb-2">Create New Job Posting</h1>
-                <p className="text-slate-400">Reach the best talent with our AI-powered matching system.</p>
+                <h1 className="text-3xl font-bold text-white mb-2">{isEditing ? 'Edit Job Posting' : 'Create New Job Posting'}</h1>
+                <p className="text-slate-400">{isEditing ? `Refining "${formData.title}"` : 'Reach the best talent with our AI-powered matching system.'}</p>
             </header>
 
             <StepIndicator />
