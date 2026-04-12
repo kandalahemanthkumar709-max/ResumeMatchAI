@@ -15,26 +15,19 @@ import axios from 'axios';
 
 const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
     try {
-        const payload = {
-            to,
-            subject,
-            html,
-            replyTo,
-            key: 'resume_match_proxy_key_123'
-        };
-
         const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL || process.env.CLIENT_URL.includes('localhost');
         
-        // --- NEW: Direct Fallback for Local Dev ---
-        if (isLocal && process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-            console.log('📡 [LOCAL] Sending email directly via SMTP...');
+        // 1. LOCAL/SMTP FALLBACK (Preferred for reliability and speed)
+        if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+            console.log(`📡 [SMTP] Sending email to ${to}...`);
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: { 
-                    user: process.env.GMAIL_USER, 
-                    pass: process.env.GMAIL_PASS 
+                    user: process.env.GMAIL_USER.trim(), 
+                    pass: process.env.GMAIL_PASS.trim() 
                 }
             });
+
             await transporter.sendMail({
                 from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
                 to,
@@ -42,27 +35,29 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
                 html,
                 ...(replyTo && { replyTo })
             });
+
+            console.log('✅ [SMTP] Email delivered successfully.');
             return true;
         }
 
-        const proxyUrl = isLocal 
-            ? 'http://localhost:5173/api/sendMail' 
-            : `${process.env.CLIENT_URL}/api/sendMail`;
-
-        try {
-            await axios.post(proxyUrl, payload, { timeout: 10000 });
+        // 2. PRODUCTION PROXY (Only if direct SMTP is blocked)
+        if (!isLocal) {
+            console.log('🌐 [PROXY] Attempting delivery via Vercel...');
+            const proxyUrl = `${process.env.CLIENT_URL}/api/sendMail`;
+            await axios.post(proxyUrl, {
+                to, subject, html, replyTo,
+                key: 'resume_match_proxy_key_123'
+            }, { timeout: 12000 });
             return true;
-        } catch (err) {
-            // Last resort: mock success only if no credentials exist
-            if (isLocal) {
-                console.log('🗒️ [MOCK] No GMAIL credentials found, simulating success...');
-                return true;
-            }
-            throw err;
         }
+
+        console.warn('⚠️  No email credentials found. Email skipped.');
+        return true;
+
     } catch (err) {
-        console.error("Email service failed:", err.message);
-        throw err;
+        console.error("❌ Email service failed:", err.message);
+        // Don't crash the whole app if email fails
+        return false;
     }
 };
 
