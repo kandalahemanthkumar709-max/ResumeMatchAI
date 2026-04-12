@@ -36,14 +36,12 @@ export function Layout({ children }) {
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Analytics', path: '/analytics', icon: BarChart3 },
     { label: 'Tracker', path: '/tracker', icon: Briefcase },
-    { label: 'Profile', path: '/profile', icon: Settings },
     { label: 'Resumes', path: '/resumes', icon: FileText, special: true },
   ];
 
   const recruiterLinks = [
     { label: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
     { label: 'Analytics', path: '/recruiter/analytics', icon: BarChart3 },
-    { label: 'Profile', path: '/profile', icon: Settings },
     { label: 'Post Job', path: '/recruiter/jobs/new', icon: Plus, special: true },
   ];
 
