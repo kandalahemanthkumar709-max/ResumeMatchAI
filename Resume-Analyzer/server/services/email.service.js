@@ -14,65 +14,53 @@ import axios from 'axios';
  */
 
 const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
+    let methodUsed = 'NONE';
     try {
         const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL || process.env.CLIENT_URL.includes('localhost');
         
-        // 1. LOCAL/SMTP FALLBACK (Preferred for reliability and speed)
+        // 1. LOCAL/SMTP FALLBACK
         if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-            console.log(`📡 [SMTP] Attempting connection for ${to}...`);
+            methodUsed = 'SMTP';
+            console.log(`📡 [SMTP] Connecting to Gmail for ${to}...`);
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
-                port: 465,
-                secure: true, // Use SSL
-                family: 4,    // FORCE IPv4 (More direct than dns.family)
+                port: 587,
+                secure: false, // Use STARTTLS
                 auth: { 
                     user: process.env.GMAIL_USER.trim(), 
                     pass: process.env.GMAIL_PASS.replace(/\s/g, '') 
                 },
-                connectionTimeout: 15000,
-                greetingTimeout: 10000,
-                socketTimeout: 15000
+                tls: { rejectUnauthorized: false }, // Avoid cert issues on some networks
+                family: 4 // Force IPv4
             });
 
-            try {
-                // Verify connection configuration
-                await transporter.verify();
-                console.log('✅ [SMTP] Connection verified.');
+            const info = await transporter.sendMail({
+                from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
+                to, subject, html,
+                ...(replyTo && { replyTo })
+            });
 
-                const info = await transporter.sendMail({
-                    from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-                    to,
-                    subject,
-                    html,
-                    ...(replyTo && { replyTo })
-                });
-
-                console.log('✨ [SMTP] Email sent! Message ID:', info.messageId);
-                return true;
-            } catch (smtpErr) {
-                console.error('❌ [SMTP] Delivery failed:', smtpErr.message);
-                throw smtpErr; // send to outer catch
-            }
+            console.log('✨ [SMTP] Success! ID:', info.messageId);
+            return { success: true, method: 'SMTP' };
         }
 
-        // 2. PRODUCTION PROXY (Only if direct SMTP is blocked)
+        // 2. PRODUCTION PROXY
         if (!isLocal) {
-            console.log('🌐 [PROXY] Attempting delivery via Vercel...');
+            methodUsed = 'PROXY';
+            console.log('🌐 [PROXY] Sending via Vercel...');
             const proxyUrl = `${process.env.CLIENT_URL}/api/sendMail`;
             await axios.post(proxyUrl, {
                 to, subject, html, replyTo,
                 key: 'resume_match_proxy_key_123'
             }, { timeout: 12000 });
-            return true;
+            return { success: true, method: 'PROXY' };
         }
 
-        console.warn('⚠️  No email credentials found. Email skipped.');
-        return true;
+        return { success: false, error: 'No delivery method available' };
 
     } catch (err) {
-        console.error("❌ Email service failed:", err.message);
-        // Don't crash the whole app if email fails
-        return false;
+        console.error(`❌ [${methodUsed}] Failed:`, err.message);
+        return { success: false, error: err.message };
     }
 };
 
@@ -174,7 +162,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
     ];
 
     try {
-        await sendViaVercelProxy(to, `Update on your application for ${jobTitle}`, getHtmlTemplate(
+        const result = await sendViaVercelProxy(to, `Update on your application for ${jobTitle}`, getHtmlTemplate(
             'Application Update',
             fullMessage,
             'View Dashboard',
@@ -182,9 +170,14 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
             seekerDetails,
             seekerName
         ), replyTo);
-        console.log(`📧 Email sent to ${to} via Vercel Proxy (Status: ${status})`);
+
+        if (result.success) {
+            console.log(`📧 Email delivered to ${to} [Method: ${result.method}] (Status: ${status})`);
+        } else {
+            console.warn(`⚠️ Email delivery skipped/failed for ${to}: ${result.error}`);
+        }
     } catch (error) {
-        console.error('❌ Email failed:', error.message);
+        console.error('❌ Outer email wrap failure:', error.message);
     }
 };
 
@@ -231,7 +224,7 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
     ];
 
     try {
-        await sendViaVercelProxy(to, template.subject, getHtmlTemplate(
+        const result = await sendViaVercelProxy(to, template.subject, getHtmlTemplate(
             template.title,
             template.message,
             template.btnText,
@@ -239,8 +232,13 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
             recruiterDetails,
             recruiterName
         ));
-        console.log(`📧 Recruiter Email sent to ${to} via Vercel Proxy (Event: ${event})`);
+        
+        if (result.success) {
+            console.log(`📧 Recruiter Email sent to ${to} [Method: ${result.method}] (Event: ${event})`);
+        } else {
+            console.warn(`⚠️ Recruiter Email skipped/failed for ${to}: ${result.error}`);
+        }
     } catch (error) {
-        console.error('❌ Recruiter Email failed:', error.message);
+        console.error('❌ Outer recruiter email wrap failure:', error.message);
     }
 };
