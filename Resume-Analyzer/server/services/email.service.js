@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 import dns from 'dns';
+import { promisify } from 'util';
+
+const resolve4 = promisify(dns.resolve4);
 
 /**
  * EMAIL SERVICE
@@ -7,41 +10,37 @@ import dns from 'dns';
  * Gmail SMTP Configuration:
  * Why "App Password"? 
  * Google has disabled "Less Secure Apps". Regular passwords WILL NOT WORK.
- * 
- * SETUP STEPS:
- * 1. Go to your Google Account (myaccount.google.com)
- * 2. Go to Security -> 2-Step Verification (Must be ON)
- * 3. Search for "App Passwords"
- * 4. Create a new App Password for "Mail" and "Windows Computer/Mac"
- * 5. Update your .env with GMAIL_USER and GMAIL_PASS (the 16-character code)
  */
 
-// Create the transporter ONCE for the whole application
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS (Port 587) - Much more stable on Render
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS, 
-    },
-    // FORCE IPv4 ONLY - This is the fix for ENETUNREACH on Render!
-    family: 4, 
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 20000, // 20 seconds
-    greetingTimeout: 20000,
-    socketTimeout: 30000,
-    pool: true
-});
+// We create the transporter dynamically so we can FORCE an IPv4 address resolution 
+// right before sending, bypassing Render's IPv6 problems.
+const createDynamicTransporter = async () => {
+    try {
+        // Force an IPv4 lookup for Google's SMTP servers
+        const addresses = await resolve4('smtp.gmail.com');
+        const ipv4Host = addresses[0];
 
-// Verify connection on startup (DISABLED for Render stability)
-/*
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('❌ EMAIL CONNECTION ERROR:'.red.bold, error.message);
-    } else {
+        return nodemailer.createTransport({
+            host: ipv4Host, // Give it the literal 142.x.x.x IP address
+            port: 587,
+            secure: false, // STARTTLS
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS, 
+            },
+            tls: {
+                servername: 'smtp.gmail.com', // Needed when using raw IP
+                rejectUnauthorized: false
+            },
+            connectionTimeout: 20000, 
+            greetingTimeout: 20000,
+            socketTimeout: 30000
+        });
+    } catch (err) {
+        console.error("DNS Resolution failed for SMTP:", err);
+        throw err;
+    }
+};
         console.log('📬 Email System: Ready to deliver'.green.bold);
     }
 });
@@ -125,6 +124,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
     };
 
     try {
+        const transporter = await createDynamicTransporter();
         await transporter.sendMail(mailOptions);
         console.log(`📧 Email sent to ${to} (Status: ${status})`);
     } catch (error) {
@@ -179,6 +179,7 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
     };
 
     try {
+        const transporter = await createDynamicTransporter();
         await transporter.sendMail(mailOptions);
         console.log(`📧 Recruiter email sent to ${to} (Event: ${event})`);
     } catch (error) {
