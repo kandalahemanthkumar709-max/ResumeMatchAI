@@ -82,7 +82,6 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['recruiter']} />}>
                <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
                <Route path="/recruiter/jobs/new" element={<PostJob />} />
-               <Route path="/recruiter/jobs/:jobId/edit" element={<PostJob />} />
                <Route path="/recruiter/jobs/:jobId/candidates" element={<Candidates />} />
                <Route path="/recruiter/applications/:id" element={<CandidateDetail />} />
                <Route path="/recruiter/analytics" element={<RecruiterAnalytics />} />
