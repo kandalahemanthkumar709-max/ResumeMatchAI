@@ -60,11 +60,8 @@ export default function Register() {
   };
 
   const handleGoogleLogin = () => {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const productionApiUrl = 'https://resumematchai-m9tq.onrender.com';
-    const localApiUrl = 'http://localhost:5000';
-    
-    const apiUrl = isLocal ? localApiUrl : productionApiUrl;
+    // Dynamically choose between production and local API URL
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     window.location.href = `${apiUrl}/api/auth/google`;
   };
 
