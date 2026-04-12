@@ -229,10 +229,12 @@ export const calculateLocationScore = (seekLoc, jobLoc, type) => {
 /**
  * getOrCreateMatch — Core logic to get match score, using cache where possible
  */
-export const getOrCreateMatch = async (seekerId, resumeId, jobId) => {
+export const getOrCreateMatch = async (seekerId, resumeId, jobId, options = { skipAI: false }) => {
     // 1. Check Cache
     const cached = await MatchCache.findOne({ seekerId, resumeId, jobId });
-    if (cached) return cached;
+    
+    // If we have a cache and it either has reasoning OR we don't need reasoning, return it!
+    if (cached && (cached.reasoning || options.skipAI)) return cached;
 
     // 2. Not in Cache? Fetch raw data
     const resume = await Resume.findById(resumeId);
@@ -285,20 +287,38 @@ export const getOrCreateMatch = async (seekerId, resumeId, jobId) => {
         overall = Math.min(overall, 45); // Clamp to max 45% if skill match is very weak
     }
 
-    // 5. Generate AI Reasoning (async, don't block saving metadata)
-    let reasoning = "";
-    try {
-        reasoning = await generateMatchReasoning(resume, job, {
-            overall,
-            skillScore: skillResult.score,
-            expScore,
-            eduScore,
-        });
-    } catch (err) {
-        reasoning = "Match based on skills and experience criteria.";
+    // 5. Generate AI Reasoning (ONLY if not skipped and not already in cache)
+    let reasoning = cached?.reasoning || "";
+    if (!options.skipAI && !reasoning) {
+        try {
+            reasoning = await generateMatchReasoning(resume, job, {
+                overall,
+                skillScore: skillResult.score,
+                expScore,
+                eduScore,
+            });
+        } catch (err) {
+            reasoning = "Match based on skills and experience criteria.";
+        }
     }
 
-    // 6. Save and Return
+    // 6. Save and Return (Update if exists, else create)
+    if (cached) {
+        cached.overallScore = overall;
+        cached.breakdown = {
+            skillScore:      skillResult.score,
+            experienceScore: expScore,
+            educationScore:  eduScore,
+            locationScore:   locScore,
+        };
+        cached.matchedSkills = skillResult.matchedSkills;
+        cached.missingSkills = skillResult.missingSkills;
+        cached.partialSkills = skillResult.partialSkills;
+        cached.reasoning = reasoning;
+        return await cached.save();
+    }
+
+    // NEW CACHE ENTRY
     return await MatchCache.create({
         seekerId,
         resumeId,

@@ -19,10 +19,9 @@ export const getMatchesForResume = async (req, res, next) => {
         const activeJobs = await Job.find({ status: 'active' }).limit(100); // limit search space for perf
 
         // 2. Loop through each job and get match result (using cache where possible)
-        // Note: In production with thousands of jobs, this would be computed 
-        // in a worker thread or on job-post, not in the request cycle.
+        // SKIP AI reasoning for bulk lists to ensure < 1s response time
         const matchPromises = activeJobs.map(job => 
-            getOrCreateMatch(req.user._id, resumeId, job._id).catch(() => null)
+            getOrCreateMatch(req.user._id, resumeId, job._id, { skipAI: true }).catch(() => null)
         );
 
         const allResults = await Promise.all(matchPromises);
@@ -33,12 +32,16 @@ export const getMatchesForResume = async (req, res, next) => {
             .sort((a, b) => b.overallScore - a.overallScore)
             .slice(0, Number(limit));
 
-        // Populate job details (we don't store full job in cache, just ID)
-        const populated = await Promise.all(filtered.map(async (m) => {
+        // 4. Batch fetch job details for the top results (Optimization using $in)
+        const jobIds = filtered.map(m => m.jobId);
+        const jobsFound = await Job.find({ _id: { $in: jobIds } })
+            .select('title company location locationType jobType companyLogo requirements description structuredData');
+
+        const populated = filtered.map(m => {
             const result = m.toObject();
-            result.job = await Job.findById(m.jobId).select('title company location locationType jobType companyLogo requirements description structuredData');
+            result.job = jobsFound.find(j => j._id.toString() === m.jobId.toString());
             return result;
-        }));
+        });
 
         res.json({ success: true, data: populated });
     } catch (error) {
@@ -67,8 +70,9 @@ export const getMatchesForJob = async (req, res, next) => {
         const allResumes = await Resume.find({ status: 'parsed' }).limit(100);
         console.log(`Found ${allResumes.length} resumes for matching`);
 
+        // SKIP AI reasoning for bulk lists to ensure < 1s response time
         const matchPromises = allResumes.map(resume => 
-            getOrCreateMatch(resume.userId, resume._id, jobId).catch(err => {
+            getOrCreateMatch(resume.userId, resume._id, jobId, { skipAI: true }).catch(err => {
                 console.error(`Match error for resume ${resume._id}:`, err.message);
                 return null;
             })
@@ -103,7 +107,8 @@ export const getSingleMatch = async (req, res, next) => {
         const resume = await Resume.findById(resumeId);
         if (!resume) throw new Error('Resume not found');
 
-        const match = await getOrCreateMatch(resume.userId, resumeId, jobId);
+        // For single match, we ALWAYS ensure AI reasoning is generated
+        const match = await getOrCreateMatch(resume.userId, resumeId, jobId, { skipAI: false });
         const result = match.toObject();
         result.job = await Job.findById(jobId).select('title company location locationType jobType companyLogo requirements description structuredData');
         
