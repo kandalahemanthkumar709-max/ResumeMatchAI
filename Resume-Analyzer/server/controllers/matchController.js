@@ -53,9 +53,14 @@ export const getMatchesForJob = async (req, res, next) => {
         const { jobId } = req.params;
         const job = await Job.findById(jobId);
 
+        if (!job) {
+            res.status(404);
+            throw new Error('Job posting not found.');
+        }
+
         if (job.postedBy.toString() !== req.user._id.toString()) {
             res.status(403);
-            throw new Error('You do not have permission to view candidates for this job.');
+            throw new Error('Access denied. You can only view candidates for jobs you have posted.');
         }
 
         // Find all resumes (in real app, we'd filter by role/status)

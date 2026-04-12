@@ -205,6 +205,19 @@ export const getMyApplications = async (req, res, next) => {
 // @desc    Get all applications for a specific job (Recruiter)
 export const getJobApplications = async (req, res, next) => {
     try {
+        // 1. Verify job exists and belongs to this recruiter
+        const job = await Job.findById(req.params.jobId);
+        if (!job) {
+            res.status(404);
+            throw new Error('Job not found.');
+        }
+
+        if (job.postedBy.toString() !== req.user._id.toString()) {
+            res.status(403);
+            throw new Error('Access denied. You can only view candidates for jobs you have posted.');
+        }
+
+        // 2. Fetch applications
         const apps = await Application.find({ jobId: req.params.jobId })
             .populate('seekerId', 'name email avatar')
             .populate('resumeId', 'label')

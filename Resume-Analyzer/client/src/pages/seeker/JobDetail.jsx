@@ -247,7 +247,7 @@ export function JobDetail() {
                         </div>
 
                         {user?.role === 'recruiter' ? (
-                            job.postedBy?._id === user?._id || job.postedBy === user?._id ? (
+                            job.postedBy?._id?.toString() === user?._id?.toString() || job.postedBy?.toString() === user?._id?.toString() ? (
                                 <button 
                                     onClick={() => navigate(`/recruiter/jobs/${job._id}/candidates`)}
                                     className="w-full mt-8 py-4 px-6 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/20 active:scale-95"
