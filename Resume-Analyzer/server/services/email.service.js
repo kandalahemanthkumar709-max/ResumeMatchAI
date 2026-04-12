@@ -14,52 +14,28 @@ import axios from 'axios';
  */
 
 const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
-    let methodUsed = 'NONE';
     try {
         const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL || process.env.CLIENT_URL.includes('localhost');
+        const proxyUrl = isLocal 
+            ? 'http://localhost:5173/api/sendMail' 
+            : `${process.env.CLIENT_URL}/api/sendMail`;
+
+        console.log(`🌐 [Proxy] Attempting to deliver via ${isLocal ? 'Local Vite' : 'Vercel'}...`);
         
-        // 1. LOCAL/SMTP FALLBACK
-        if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-            methodUsed = 'SMTP';
-            console.log(`📡 [SMTP] Connecting to Gmail for ${to}...`);
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 587,
-                secure: false, // Use STARTTLS
-                auth: { 
-                    user: process.env.GMAIL_USER.trim(), 
-                    pass: process.env.GMAIL_PASS.replace(/\s/g, '') 
-                },
-                tls: { rejectUnauthorized: false }, // Avoid cert issues on some networks
-                family: 4 // Force IPv4
-            });
+        const response = await axios.post(proxyUrl, {
+            to, subject, html, replyTo,
+            key: 'resume_match_proxy_key_123'
+        }, { timeout: 15000 });
 
-            const info = await transporter.sendMail({
-                from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-                to, subject, html,
-                ...(replyTo && { replyTo })
-            });
-
-            console.log('✨ [SMTP] Success! ID:', info.messageId);
-            return { success: true, method: 'SMTP' };
-        }
-
-        // 2. PRODUCTION PROXY
-        if (!isLocal) {
-            methodUsed = 'PROXY';
-            console.log('🌐 [PROXY] Sending via Vercel...');
-            const proxyUrl = `${process.env.CLIENT_URL}/api/sendMail`;
-            await axios.post(proxyUrl, {
-                to, subject, html, replyTo,
-                key: 'resume_match_proxy_key_123'
-            }, { timeout: 12000 });
+        if (response.data.success) {
+            console.log('✨ [Proxy] Email delivered successfully.');
             return { success: true, method: 'PROXY' };
         }
-
-        return { success: false, error: 'No delivery method available' };
+        
+        return { success: false, error: 'Proxy returned failure' };
 
     } catch (err) {
-        console.error(`❌ [${methodUsed}] Failed:`, err.message);
+        console.error(`❌ [Proxy] Failed:`, err.response?.data?.message || err.message);
         return { success: false, error: err.message };
     }
 };
