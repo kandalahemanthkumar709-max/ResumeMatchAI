@@ -23,7 +23,14 @@ JOB TITLE: ${title}
 JOB DESCRIPTION: ${(rawDescription || '').substring(0, 3000)}
 REQUIREMENTS: ${(requirements || '').substring(0, 1000)}
 
-Return JSON including: required_skills[], nice_to_have_skills[], min_experience_years, education_required, responsibilities[], seniority_level, key_technologies[]`;
+Return JSON including: 
+- required_skills (array)
+- nice_to_have_skills (array)
+- min_experience_years (number)
+- education_required (string - be specific e.g. "Bachelor's degree". If not mentioned, infer the most likely degree required for this role title, never leave as "Not specified" if it can be inferred)
+- responsibilities (string array)
+- seniority_level (string)
+- key_technologies (string array)`;
 
         // Retry logic for rate limits/errors
         let text = '';

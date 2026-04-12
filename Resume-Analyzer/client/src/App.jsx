@@ -9,6 +9,7 @@ import { Dashboard } from './pages/Dashboard';
 import Login from './pages/auth/Login'; 
 import Register from './pages/auth/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import ChooseRole from './pages/auth/ChooseRole';
 import { Resumes } from './pages/seeker/Resumes';
 import { Jobs } from './pages/seeker/Jobs';
 import { JobDetail } from './pages/seeker/JobDetail';
@@ -60,6 +61,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/choose-role" element={<ProtectedRoute skipRoleCheck={true}><ChooseRole /></ProtectedRoute>} />
+            
             
              {/* Seeker-Only Routes (You must be logged in as a seeker to see these) */}
             <Route element={<ProtectedRoute allowedRoles={['seeker']} />}>

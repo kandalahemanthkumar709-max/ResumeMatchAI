@@ -45,7 +45,10 @@ export function Layout({ children }) {
     { label: 'Post Job', path: '/recruiter/jobs/new', icon: Plus, special: true },
   ];
 
-  const currentLinks = user?.role === 'recruiter' ? recruiterLinks : seekerLinks;
+  // If user needs to assign a role, don't show any links yet
+  const currentLinks = user?.needsRoleAssignment 
+    ? [] 
+    : (user?.role === 'recruiter' ? recruiterLinks : seekerLinks);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950">

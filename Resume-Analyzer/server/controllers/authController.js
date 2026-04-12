@@ -110,6 +110,35 @@ export const updateProfile = async (req, res, next) => {
     }
 }
 
+// @route   PATCH /api/auth/set-role
+export const setRole = async (req, res, next) => {
+    try {
+        const { role } = req.body;
+        if (!['seeker', 'recruiter'].includes(role)) {
+            res.status(400);
+            throw new Error('Invalid role selected.');
+        }
+
+        const user = await User.findById(req.user._id);
+        if (user) {
+            user.role = role;
+            user.needsRoleAssignment = false; // Mark as done!
+            await user.save();
+            
+            res.json({
+                success: true,
+                role: user.role,
+                token: generateToken(user._id)
+            });
+        } else {
+            res.status(404);
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        next(error);
+    }
+}
+
 // @route   POST /api/auth/test-email
 export const sendTestEmail = async (req, res, next) => {
     try {

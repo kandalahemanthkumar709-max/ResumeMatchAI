@@ -1,0 +1,252 @@
+[
+  {
+    "_id": "69d9c67f5aed39175420237a",
+    "seekerId": "69d9c6435aed39175420235a",
+    "jobId": "69d9c5e6e42f46c867cb804a",
+    "resumeId": "69d9c6595aed39175420235b",
+    "coverLetter": "",
+    "status": "screening",
+    "notes": "\"Exceptional performance on the React logic assessment. Candidate demonstrated deep understanding of hooks and state synchronization. Highly recommend moving to the final technical round. Only minor concern is their lack of PostgreSQL experience, but they are a fast learner.\"\n\n",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-11T03:56:47.730Z",
+        "note": "Moved to applied stage."
+      },
+      {
+        "status": "screening",
+        "changedAt": "2026-04-11T05:26:10.494Z",
+        "note": "Moved to screening stage."
+      }
+    ],
+    "appliedAt": "2026-04-11T03:56:47.729Z",
+    "statusUpdatedAt": "2026-04-11T05:26:10.497Z",
+    "createdAt": "2026-04-11T03:56:47.730Z",
+    "updatedAt": "2026-04-11T05:37:43.456Z",
+    "__v": 1
+  },
+  {
+    "_id": "69da80f6030c2f60d10fd34e",
+    "seekerId": "69da7804030c2f60d10fd32e",
+    "jobId": "69d9c5e5e42f46c867cb8041",
+    "resumeId": "69da7d8a030c2f60d10fd32f",
+    "coverLetter": "Dear Hiring Manager at WordStream AI,\n\nI am excited to apply for the NLP Researcher position at WordStream AI, where I can leverage my technical expertise to drive innovation in natural language processing. With a strong foundation in Python, JavaScript, and a keen interest in NLP, I am confident that my skills align with the requirements of this role.\n\nAs a skilled programmer with experience in Transformers Architecture, Hugging Face Transformers, and PyTorch, I am well-equipped to conduct research on BERT and Transformer models. My proficiency in Python, combined with my knowledge of NLP, makes me an ideal fit for this position. Although I don't have direct research experience, my strong analytical thinking, problem-solving skills, and ability to work collaboratively in a team will enable me to make a significant contribution to your research team. I am eager to apply my skills and knowledge to drive research and development in NLP at WordStream AI.\n\nI would welcome the opportunity to discuss my application and how my skills can support the research goals of WordStream AI. Please do not hesitate to contact me to arrange a conversation. I look forward to the opportunity to contribute to the advancement of NLP research at WordStream AI and explore how my skills can drive innovation in this field.",
+    "status": "applied",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-11T17:12:22.313Z",
+        "note": "Moved to applied stage."
+      }
+    ],
+    "appliedAt": "2026-04-11T17:12:22.313Z",
+    "statusUpdatedAt": "2026-04-11T17:12:22.314Z",
+    "createdAt": "2026-04-11T17:12:22.313Z",
+    "updatedAt": "2026-04-11T17:12:22.313Z",
+    "__v": 0
+  },
+  {
+    "_id": "69dae0129ab313bb8a070666",
+    "seekerId": "69dadbe79ab313bb8a070645",
+    "jobId": "69d9c5e6e42f46c867cb8047",
+    "resumeId": "69dadf269ab313bb8a070647",
+    "coverLetter": "Dear Hiring Manager at GrowthX,\n\nI am excited to apply for the Junior Data Analyst position at GrowthX, as it represents an ideal opportunity for me to leverage my technical skills and passion for data analysis in a dynamic and growth-oriented environment. With a strong foundation in programming languages, including Python, JavaScript, and expertise in data manipulation and analysis tools such as pandas and NumPy, I am confident in my ability to make a meaningful contribution to your team.\n\nAs a detail-oriented and analytically driven individual with a proficiency in SQL, I possess the skills required to excel in this entry-level data role. My experience with Python and SQL aligns with the job requirements, and I am eager to apply my knowledge in a real-world setting. I am a quick learner, and I thrive in collaborative environments, which makes me a strong fit for this position. I am excited about the opportunity to work with a talented team and contribute to the company's growth and success.\n\nI would welcome the opportunity to discuss my application and how my skills align with the requirements of the Junior Data Analyst role. Thank you for considering my application. I look forward to the opportunity to discuss this position further and learn more about the GrowthX team.",
+    "status": "screening",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-11T23:58:10.199Z",
+        "note": "Moved to applied stage."
+      },
+      {
+        "status": "screening",
+        "changedAt": "2026-04-12T00:26:44.400Z",
+        "note": "Moved to screening stage."
+      }
+    ],
+    "appliedAt": "2026-04-11T23:58:10.198Z",
+    "statusUpdatedAt": "2026-04-12T00:26:44.402Z",
+    "createdAt": "2026-04-11T23:58:10.199Z",
+    "updatedAt": "2026-04-12T00:26:44.400Z",
+    "__v": 1
+  },
+  {
+    "_id": "69dae4041c4ff5444eadf207",
+    "seekerId": "69dadbe79ab313bb8a070645",
+    "jobId": "69d9c5e5e42f46c867cb803e",
+    "resumeId": "69dadf269ab313bb8a070647",
+    "coverLetter": "Dear Hiring Manager at FutureTech AI,\n\nI am excited to apply for the Generative AI Engineer position at FutureTech AI, where I can leverage my technical expertise to drive innovation in LLM-powered applications. With a strong foundation in Python, JavaScript, and AI-related technologies such as LangChain, Transformers Architecture, and Hugging Face Transformers, I am confident in my ability to make a significant impact at your organization.\n\nAs a skilled engineer with expertise in Python, LangChain, and other relevant technologies, I am well-equipped to build LLM-powered applications using RAG and LangChain. My experience with PyTorch, TensorFlow, and Scikit-learn has provided me with a solid understanding of machine learning principles, while my familiarity with databases such as MongoDB, Vector Databases, and SQL has given me the ability to effectively manage and analyze complex data. I am eager to bring my skills and enthusiasm to FutureTech AI and contribute to the development of cutting-edge AI applications.\n\nI would welcome the opportunity to discuss my application and how my skills align with the requirements of the Generative AI Engineer role. Please feel free to contact me to arrange a conversation. I look forward to the opportunity to discuss my qualifications further and explore how I can contribute to the success of FutureTech AI.",
+    "status": "applied",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T00:15:00.813Z",
+        "note": "Moved to applied stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T00:15:00.810Z",
+    "statusUpdatedAt": "2026-04-12T00:15:00.814Z",
+    "createdAt": "2026-04-12T00:15:00.812Z",
+    "updatedAt": "2026-04-12T00:15:00.812Z",
+    "__v": 0
+  },
+  {
+    "_id": "69daef0c3752e54358efba7b",
+    "seekerId": "69dadbe79ab313bb8a070645",
+    "jobId": "69d9c5e5e42f46c867cb8041",
+    "resumeId": "69dadf269ab313bb8a070647",
+    "coverLetter": "Dear Hiring Manager at WordStream AI,\n\nI am excited to apply for the NLP Researcher position at WordStream AI, where I can leverage my skills in Natural Language Processing (NLP) and machine learning to drive innovative research. With a strong foundation in Python, JavaScript, and expertise in Transformers Architecture, Hugging Face Transformers, and other relevant technologies, I am confident in my ability to contribute to the development of cutting-edge NLP solutions.\n\nAs a highly motivated and analytical individual with a strong background in programming languages such as Python, I am well-equipped to conduct research on BERT and Transformer models. My familiarity with TensorFlow, PyTorch, and Scikit-learn will enable me to design and implement efficient models, while my experience with data manipulation using pandas and NumPy will facilitate seamless data processing. Additionally, my knowledge of databases such as MongoDB and SQL will allow me to effectively manage and retrieve data. I am eager to apply my skills and knowledge to drive research and innovation in NLP at WordStream AI.\n\nI would welcome the opportunity to discuss my application and how my skills align with the requirements of the NLP Researcher role. Please do not hesitate to contact me to arrange a conversation. I look forward to the opportunity to contribute to the WordStream AI team and advance the field of NLP research.",
+    "status": "interview",
+    "notes": "12-4-2026",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T01:02:04.294Z",
+        "note": "Moved to applied stage."
+      },
+      {
+        "status": "screening",
+        "changedAt": "2026-04-12T01:28:16.687Z",
+        "note": "Moved to screening stage."
+      },
+      {
+        "status": "interview",
+        "changedAt": "2026-04-12T01:55:48.145Z",
+        "note": "12-4-2026"
+      }
+    ],
+    "appliedAt": "2026-04-12T01:02:04.292Z",
+    "statusUpdatedAt": "2026-04-12T01:55:48.147Z",
+    "createdAt": "2026-04-12T01:02:04.294Z",
+    "updatedAt": "2026-04-12T01:55:48.145Z",
+    "__v": 2
+  },
+  {
+    "_id": "69daf457aedbbe21088af55c",
+    "seekerId": "69dadbe79ab313bb8a070645",
+    "jobId": "69d9c5e5e42f46c867cb8040",
+    "resumeId": "69dadf269ab313bb8a070647",
+    "coverLetter": "Dear Hiring Manager at BigData Corp,\n\nI am excited to apply for the Data Scientist position at BigData Corp, where I can utilize my technical skills to drive business strategy through data analysis. With a strong foundation in programming languages such as Python and JavaScript, I am confident in my ability to collect, analyze, and interpret complex data sets.\n\nAs a skilled data professional, I possess a unique combination of technical skills that align with the requirements of this role. My expertise in Python, SQL, and pandas makes me an ideal fit for this position. Additionally, my knowledge of statistics and data analysis will enable me to provide valuable insights into consumer behavior, driving strategic decision-making at BigData Corp. Although I am early in my career, I am a quick learner, and my strong problem-solving skills, analytical thinking, and ability to work collaboratively in a team will allow me to make a significant contribution to your organization.\n\nI would welcome the opportunity to discuss my application and how my skills can support the success of BigData Corp. Please feel free to contact me to arrange a meeting to explore how I can contribute to your team as a Data Scientist.",
+    "status": "applied",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T01:24:39.530Z",
+        "note": "Moved to applied stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T01:24:39.525Z",
+    "statusUpdatedAt": "2026-04-12T01:24:39.535Z",
+    "createdAt": "2026-04-12T01:24:39.529Z",
+    "updatedAt": "2026-04-12T01:24:39.529Z",
+    "__v": 0
+  },
+  {
+    "_id": "69db67b0122ec17439ab805c",
+    "seekerId": "69db673b122ec17439ab801d",
+    "jobId": "69d9c5e6e42f46c867cb805b",
+    "resumeId": "69db675d122ec17439ab801e",
+    "coverLetter": "",
+    "status": "applied",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T09:36:48.815Z",
+        "note": "Moved to applied stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T09:36:48.814Z",
+    "statusUpdatedAt": "2026-04-12T09:36:48.816Z",
+    "createdAt": "2026-04-12T09:36:48.815Z",
+    "updatedAt": "2026-04-12T09:36:48.815Z",
+    "__v": 0
+  },
+  {
+    "_id": "69db67bc122ec17439ab805f",
+    "seekerId": "69db673b122ec17439ab801c",
+    "jobId": "69d9c5e6e42f46c867cb8047",
+    "resumeId": "69db675e122ec17439ab801f",
+    "coverLetter": "",
+    "status": "screening",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T09:37:00.499Z",
+        "note": "Moved to applied stage."
+      },
+      {
+        "status": "screening",
+        "changedAt": "2026-04-12T09:50:56.926Z",
+        "note": "Moved to screening stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T09:37:00.499Z",
+    "statusUpdatedAt": "2026-04-12T09:50:56.927Z",
+    "createdAt": "2026-04-12T09:37:00.499Z",
+    "updatedAt": "2026-04-12T09:50:56.926Z",
+    "__v": 1
+  },
+  {
+    "_id": "69db67d7122ec17439ab8062",
+    "seekerId": "69db673b122ec17439ab801c",
+    "jobId": "69d9c5e6e42f46c867cb804d",
+    "resumeId": "69db675e122ec17439ab801f",
+    "coverLetter": "",
+    "status": "applied",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T09:37:27.734Z",
+        "note": "Moved to applied stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T09:37:27.733Z",
+    "statusUpdatedAt": "2026-04-12T09:37:27.734Z",
+    "createdAt": "2026-04-12T09:37:27.734Z",
+    "updatedAt": "2026-04-12T09:37:27.734Z",
+    "__v": 0
+  },
+  {
+    "_id": "69db69fd122ec17439ab8065",
+    "seekerId": "69db673b122ec17439ab801d",
+    "jobId": "69d9c5e6e42f46c867cb8047",
+    "resumeId": "69db675d122ec17439ab801e",
+    "coverLetter": "Dear Hiring Manager at GrowthX,\n\nI am excited to apply for the Junior Data Analyst position at GrowthX, as it represents an ideal opportunity for me to launch my career in data analysis. With a strong foundation in technical skills, I am confident that I can make a valuable contribution to your team.\n\nAs a detail-oriented and analytical individual with skills in SQL, Excel, and a quick learning ability, I believe I am a strong fit for this role. Although I don't have direct experience, my proficiency in HTML, CSS, and LoRaWAN demonstrates my ability to adapt to new technologies and learn quickly. Additionally, my leadership, time management, and problem-solving skills will enable me to effectively manage projects and collaborate with colleagues. I am eager to learn Python and expand my skill set to meet the requirements of the position. I am excited about the opportunity to apply my skills and knowledge in a real-world setting and continue to grow and develop as a professional.\n\nI would welcome the opportunity to discuss my application and how I can contribute to the success of GrowthX. Please do not hesitate to contact me to arrange an interview. I look forward to the opportunity to discuss this further and learn more about your team.",
+    "status": "screening",
+    "notes": "",
+    "matchScore": 0,
+    "statusHistory": [
+      {
+        "status": "applied",
+        "changedAt": "2026-04-12T09:46:37.152Z",
+        "note": "Moved to applied stage."
+      },
+      {
+        "status": "screening",
+        "changedAt": "2026-04-12T09:49:56.335Z",
+        "note": "Moved to screening stage."
+      }
+    ],
+    "appliedAt": "2026-04-12T09:46:37.152Z",
+    "statusUpdatedAt": "2026-04-12T09:49:56.335Z",
+    "createdAt": "2026-04-12T09:46:37.152Z",
+    "updatedAt": "2026-04-12T09:49:56.335Z",
+    "__v": 1
+  }
+]

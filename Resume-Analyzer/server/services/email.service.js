@@ -23,8 +23,28 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
             key: 'resume_match_proxy_key_123'
         };
 
-        // If local dev, just console log since proxy might not be running properly standalone
-        const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL;
+        const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL || process.env.CLIENT_URL.includes('localhost');
+        
+        // --- NEW: Direct Fallback for Local Dev ---
+        if (isLocal && process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+            console.log('📡 [LOCAL] Sending email directly via SMTP...');
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { 
+                    user: process.env.GMAIL_USER, 
+                    pass: process.env.GMAIL_PASS 
+                }
+            });
+            await transporter.sendMail({
+                from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
+                to,
+                subject,
+                html,
+                ...(replyTo && { replyTo })
+            });
+            return true;
+        }
+
         const proxyUrl = isLocal 
             ? 'http://localhost:5173/api/sendMail' 
             : `${process.env.CLIENT_URL}/api/sendMail`;
@@ -33,44 +53,48 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
             await axios.post(proxyUrl, payload, { timeout: 10000 });
             return true;
         } catch (err) {
-            // Give local development a fake success so it doesn't crash
-            if (isLocal && (!err.response || err.response.status !== 500)) {
-                console.log('✅ Local Dev Mock Email Success! (Ignored Vercel error)');
+            // Last resort: mock success only if no credentials exist
+            if (isLocal) {
+                console.log('🗒️ [MOCK] No GMAIL credentials found, simulating success...');
                 return true;
             }
             throw err;
         }
     } catch (err) {
-        console.error("Vercel Proxy Email failed:", err.message);
+        console.error("Email service failed:", err.message);
         throw err;
     }
 };
 
-const getHtmlTemplate = (title, message, btnText, btnLink, details = []) => `
-    <div style="font-family: 'Inter', -apple-system, sans-serif; background-color: #f8fafc; padding: 40px 20px; color: #334155;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
+const getHtmlTemplate = (title, message, btnText, btnLink, details = [], recipientName = '') => `
+    <div style="font-family: 'Inter', -apple-system, sans-serif; background-color: #0f172a; padding: 40px 20px; color: #f8fafc;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #1e293b; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.05);">
             <tr>
-                <td align="left" style="padding: 32px 42px; border-bottom: 1px solid #f1f5f9; background-color: #ffffff;">
-                    <div style="font-weight: 900; color: #0f172a; letter-spacing: -0.025em; font-size: 24px; display: inline-block; vertical-align: middle;">
-                        ${process.env.VITE_APP_NAME || 'ResumeMatch AI'}
+                <td align="center" style="padding: 40px; background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+                    <div style="font-weight: 900; color: #ffffff; letter-spacing: -0.05em; font-size: 28px;">
+                        ResumeMatch <span style="color: #67e8f9;">AI</span>
                     </div>
                 </td>
             </tr>
             <tr>
-                <td style="padding: 42px;">
-                    <h2 style="color: #0f172a; margin: 0 0 20px 0; font-size: 22px; font-weight: 700; letter-spacing: -0.0125em;">${title}</h2>
-                    <div style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 28px;">
+                <td style="padding: 48px 40px;">
+                    <h2 style="color: #ffffff; margin: 0 0 16px 0; font-size: 24px; font-weight: 800; letter-spacing: -0.025em;">${title}</h2>
+                    
+                    <div style="color: #94a3b8; font-size: 16px; margin-bottom: 24px;">
+                        Hi ${recipientName || 'there'},
+                    </div>
+
+                    <div style="color: #cbd5e1; line-height: 1.8; font-size: 16px; margin-bottom: 32px;">
                         ${message}
                     </div>
 
                     ${details && details.length > 0 ? `
-                    <div style="background-color: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 32px; border: 1px solid #e2e8f0;">
-                        <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Key Details</h3>
+                    <div style="background-color: rgba(15, 23, 42, 0.5); border-radius: 20px; padding: 28px; margin-bottom: 36px; border: 1px solid rgba(255,255,255,0.05);">
                         <table width="100%" style="border-collapse: collapse;">
                             ${details.map(detail => `
                             <tr>
-                                <td width="35%" style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">${detail.label}</td>
-                                <td width="65%" style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: 500;">${detail.value}</td>
+                                <td width="40%" style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${detail.label}</td>
+                                <td width="60%" style="padding: 10px 0; color: #f8fafc; font-size: 14px; font-weight: 600; text-align: right;">${detail.value}</td>
                             </tr>
                             `).join('')}
                         </table>
@@ -78,18 +102,18 @@ const getHtmlTemplate = (title, message, btnText, btnLink, details = []) => `
                     ` : ''}
 
                     ${btnLink ? `
-                    <div>
-                        <a href="${btnLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
-                            ${btnText} &rarr;
+                    <div style="text-align: center;">
+                        <a href="${btnLink}" style="display: inline-block; background: linear-gradient(to right, #06b6d4, #3b82f6); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);">
+                            ${btnText}
                         </a>
                     </div>
                     ` : ''}
                 </td>
             </tr>
             <tr>
-                <td align="center" style="padding: 24px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px;">
-                    <p style="margin: 0 0 8px 0;">This is an automated notification from ${process.env.VITE_APP_NAME || 'ResumeMatch AI'}.</p>
-                    <p style="margin: 0;">&copy; ${new Date().getFullYear()} All rights reserved. <a href="${process.env.CLIENT_URL}/help" style="color: #2563eb; text-decoration: none;">Help Support</a></p>
+                <td align="center" style="padding: 32px; background-color: #0f172a; color: #475569; font-size: 12px; font-weight: 500;">
+                    <p style="margin: 0 0 12px 0;">Intelligence applied to your career journey.</p>
+                    <p style="margin: 0;">&copy; ${new Date().getFullYear()} ResumeMatch AI. <a href="${process.env.CLIENT_URL}" style="color: #0ea5e9; text-decoration: none; font-weight: 700;">Visit Platform</a></p>
                 </td>
             </tr>
         </table>
@@ -133,7 +157,8 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
             fullMessage,
             'View Dashboard',
             `${process.env.CLIENT_URL}/dashboard`,
-            seekerDetails
+            seekerDetails,
+            seekerName
         ), replyTo);
         console.log(`📧 Email sent to ${to} via Vercel Proxy (Status: ${status})`);
     } catch (error) {
@@ -189,7 +214,8 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
             template.message,
             template.btnText,
             `${process.env.CLIENT_URL}/recruiter/dashboard`,
-            recruiterDetails
+            recruiterDetails,
+            recruiterName
         ));
         console.log(`📧 Recruiter Email sent to ${to} via Vercel Proxy (Event: ${event})`);
     } catch (error) {

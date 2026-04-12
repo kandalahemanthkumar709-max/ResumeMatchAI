@@ -54,9 +54,9 @@ Respond with ONLY a valid JSON object that strictly follows this schema:
   "phone": "Phone Number",
   "summary": "Professional summary",
   "skills": {
-    "hard": ["Strictly extract ALL programming languages, frameworks, frontend, backend, architectures, and hard skills found ANYWHERE in the resume"],
+    "hard": ["Strictly extract ALL programming languages, frameworks, frontend, backend, architectures, and hard skills. NOTE: Carefully distinguish between 'Java' and 'JavaScript' — they are NOT the same. Only extract 'Java' if it specifically refers to the Java language (not just Javascript)."],
     "soft": ["Extract ALL soft skills found"],
-    "tools": ["Extract ALL databases, IDEs, Git, cloud platforms, and other tools found"]
+    "tools": ["Extract ALL databases, IDEs, Git, cloud platforms, and other tools found. NOTE: Distinguish between 'SQL' and 'NoSQL' databases."]
   },
   "experience": [
     {
@@ -71,9 +71,10 @@ Respond with ONLY a valid JSON object that strictly follows this schema:
   ],
   "education": [
     {
-      "institution": "University Name",
-      "degree": "Degree Name",
-      "field": "Field of Study",
+      "institution": "University Name or School Name",
+      "degree": "Degree Name (e.g. B.Tech, SSC, Intermediate, M.S.)",
+      "field": "Field of Study (e.g. Computer Science, ECE)",
+      "percentage": "Extract percentage or GPA if available (e.g. 85%, 8.5 GPA)",
       "startDate": "Year",
       "endDate": "Year"
     }

@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { check } from 'express-validator';
-import { registerUser, loginUser, getMe, updateProfile, sendTestEmail } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe, updateProfile, sendTestEmail, setRole } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 /**
@@ -35,6 +35,7 @@ router.post('/login', [
 router.get('/me', protect, getMe);
 router.patch('/profile', protect, updateProfile);
 router.post('/test-email', protect, sendTestEmail);
+router.patch('/set-role', protect, setRole);
 
 // ---------------------------------------------------------
 // GOOGLE OAUTH ROUTES

@@ -59,6 +59,12 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // needsRoleAssignment: Used specifically for Google OAuth users to 
+    // force them to pick a role on their first login.
+    needsRoleAssignment: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

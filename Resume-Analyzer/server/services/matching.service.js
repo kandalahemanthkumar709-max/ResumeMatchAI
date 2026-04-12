@@ -19,21 +19,21 @@ import { generateMatchReasoning } from './ai.service.js';
 
 // Common Tech Skill Synonyms/Groups for better matching
 const SKILL_SYNONYMS = {
-    'python': ['py', 'python3', 'pythonscript', 'cpython'],
-    'javascript': ['js', 'ecmascript', 'es6', 'es7', 'javascriptes6', 'javascriptes7', 'js-es6'],
-    'typescript': ['ts', 'tsx'],
+    'java': ['java', 'java8', 'java11', 'java17', 'jdk', 'jre', 'j2ee', 'spring boot', 'spring framework'],
+    'javascript': ['js', 'javascript', 'ecmascript', 'es6', 'es7', 'javascriptes6', 'javascriptes7', 'js-es6'],
+    'typescript': ['ts', 'tsx', 'typescript'],
     'node.js': ['nodejs', 'node', 'node-js'],
-    'react': ['reactjs', 'react.js', 'react-js', 'react native', 'jsx'],
-    'mongodb': ['mongo', 'mongoose', 'nosql-database'],
+    'react': ['reactjs', 'react.js', 'react-js', 'react native', 'jsx', 'next.js', 'nextjs'],
+    'mongodb': ['mongo', 'mongoose', 'nosql-database', 'mongodb'],
     'express': ['expressjs', 'express.js', 'express-js'],
     'tailwind css': ['tailwind', 'tailwindcss', 'utility-css'],
     'machine learning': ['ml', 'statistical modeling', 'predictive modeling'],
     'deep learning': ['dl', 'neural networks', 'cnn', 'rnn'],
     'artificial intelligence': ['ai', 'agentic ai', 'artificial-intelligence'],
     'natural language processing': ['nlp', 'llm', 'large language models', 'transformers', 'bert', 'gpt'],
-    'sql': ['postgresql', 'mysql', 'mssql', 'sqlite', 'relational database', 'postgres'],
-    'nosql': ['mongodb', 'cassandra', 'redis', 'dynamodb'],
-    'cloud': ['aws', 'gcp', 'azure', 'amazon web services', 'google cloud'],
+    'sql': ['postgresql', 'mysql', 'mssql', 'sqlite', 'relational database', 'postgres', 'sql server'],
+    'nosql': ['mongodb', 'cassandra', 'redis', 'dynamodb', 'couchbase'],
+    'cloud': ['aws', 'gcp', 'azure', 'amazon web services', 'google cloud', 'cloud computing'],
     'docker': ['containerization', 'kubernetes', 'k8s', 'containers'],
     'pytorch': ['torch', 'torchvision', 'torchaudio'],
     'tensorflow': ['tf', 'keras'],
@@ -58,22 +58,39 @@ export const calculateSkillScore = (resumeSkills = [], jobRequired = [], jobNice
         const cleanReq = clean(req);
         if (resumeList.includes(cleanReq)) return 'exact';
 
-        // Check synonyms
+        // Check synonyms with a stricter membership test to avoid false positives (e.g. Java matching JavaScript)
         for (const [canonical, synonyms] of Object.entries(SKILL_SYNONYMS)) {
             const allInGroup = [canonical, ...synonyms].map(clean);
-            if (allInGroup.some(member => member === cleanReq || member.includes(cleanReq) || cleanReq.includes(member))) {
-                if (resumeList.some(rs => allInGroup.some(member => member === rs || member.includes(rs) || rs.includes(member)))) {
+            
+            // Does this requirement belong to this group?
+            // Use exact match or very specific substring (like 'sql' in 'mysql') but skip 'java'
+            const reqBelongsToGroup = allInGroup.some(member => {
+                if (member === cleanReq) return true;
+                // Allow 'sql' to match 'mysql' etc, but PROTECT 'java' from 'javascript'
+                if (cleanReq === 'java' && member.includes('javascript')) return false;
+                if (cleanReq.length >= 3 && member.includes(cleanReq)) return true;
+                return false;
+            });
+
+            if (reqBelongsToGroup) {
+                // If it does, does the resume have ANY skill from this same group?
+                if (resumeList.some(rs => allInGroup.some(member => member === rs || rs.includes(member)))) {
                     return 'exact'; 
                 }
             }
         }
 
-        // Partial match logic needs to be VERY careful to avoid hallucinations (e.g., 'ai' matching 'email')
-        // We only allow partial match if one string is at least 4 chars long, OR it's a dedicated word boundary match
+        // Partial match fallback for things not in synonym groups
         const partial = resumeSkills.find(rs => {
             const cRs = clean(rs);
-            // Ignore very short strings completely for partial matching to avoid hallucinating
             if (cRs.length <= 3 || cleanReq.length <= 3) return false;
+            
+            // Stricter partial match: avoid Java/JavaScript overlap here too
+            if ((cleanReq === 'java' && cRs.includes('javascript')) || 
+                (cRs === 'java' && cleanReq.includes('javascript'))) {
+                return false;
+            }
+
             return cRs.includes(cleanReq) || cleanReq.includes(cRs);
         });
         
@@ -144,16 +161,27 @@ export const calculateExperienceScore = (resumeExp = [], jobMinYears = 0) => {
  * calculateEducationScore — Weight rankings for degrees
  */
 export const calculateEducationScore = (resumeEdu = [], jobRequired = '') => {
-    if (!jobRequired || jobRequired.toLowerCase().includes('not specified')) return 100;
+    // If job doesn't specify, we give a high base score but not necessarily 100 if the resume is empty
+    if (!jobRequired || jobRequired.toLowerCase().includes('not specified')) {
+        return resumeEdu.length > 0 ? 100 : 70; 
+    }
 
-    const rankings = { 'high school': 1, 'associate': 2, 'bachelor': 3, 'master': 4, 'phd': 5 };
+    const rankings = { 
+        'high school': 1, 'ssc': 1, 'inter': 1, 'intermediate': 1,
+        'associate': 2, 'diploma': 2,
+        'bachelor': 3, 'btech': 3, 'be': 3, 'bsc': 3, 'degree': 3,
+        'master': 4, 'mtech': 4, 'me': 4, 'msc': 4, 'mba': 4,
+        'phd': 5, 'doctorate': 5 
+    };
     
     // Find highest degree in resume
     let highestRank = 0;
     resumeEdu.forEach(edu => {
-        const degree = (edu.degree || '').toLowerCase();
+        const degree = (edu.degree || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const field = (edu.field || '').toLowerCase();
+        
         Object.keys(rankings).forEach(key => {
-            if (degree.includes(key) && rankings[key] > highestRank) {
+            if (degree.includes(key.replace(/ /g, '')) && rankings[key] > highestRank) {
                 highestRank = rankings[key];
             }
         });
@@ -161,13 +189,23 @@ export const calculateEducationScore = (resumeEdu = [], jobRequired = '') => {
 
     // Find ranking of requirement
     let reqRank = 0;
-    const cleanReq = jobRequired.toLowerCase();
+    const cleanReq = jobRequired.toLowerCase().replace(/[^a-z0-9]/g, '');
     Object.keys(rankings).forEach(key => {
-        if (cleanReq.includes(key)) reqRank = rankings[key];
+        if (cleanReq.includes(key.replace(/ /g, ''))) {
+            if (rankings[key] > reqRank) reqRank = rankings[key];
+        }
     });
 
-    if (highestRank >= reqRank) return 100;
-    if (highestRank === reqRank - 1) return 60; // One level below
+    // Score Calculation (Education Percentage)
+    if (highestRank >= reqRank && reqRank > 0) return 100;
+    if (reqRank === 0) return 100; // Requirement was vague
+    
+    // Graduated scoring for education match
+    const diff = highestRank - reqRank;
+    if (diff === -1) return 70;  // One level below (e.g. Master req, Bachelor have)
+    if (diff === -2) return 40;  // Two levels below
+    if (highestRank > 0) return 20; // Has some education but far below
+    
     return 0;
 };
 

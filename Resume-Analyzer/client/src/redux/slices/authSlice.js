@@ -37,6 +37,17 @@ export const login = createAsyncThunk(
         }
     }
 );
+export const setRole = createAsyncThunk(
+    'auth/setRole',
+    async (role, { rejectWithValue }) => {
+        try {
+            const res = await axios.patch('/api/auth/set-role', { role });
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || 'Role assignment failed');
+        }
+    }
+);
 
 const hasUrlToken = typeof window !== 'undefined' && window.location.search.includes('token=');
 
@@ -120,6 +131,25 @@ const authSlice = createSlice({
             state.token = null;
             state.user = null;
             state.isAuthenticated = false;
+            state.isLoading = false;
+            state.error = action.payload;
+        });
+
+        // setRole
+        builder.addCase(setRole.pending, (state) => {
+            state.isLoading = true;
+        });
+        builder.addCase(setRole.fulfilled, (state, action) => {
+            localStorage.setItem('token', action.payload.token);
+            state.token = action.payload.token;
+            state.user = { 
+                ...state.user, 
+                role: action.payload.role, 
+                needsRoleAssignment: false 
+            };
+            state.isLoading = false;
+        });
+        builder.addCase(setRole.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.payload;
         });

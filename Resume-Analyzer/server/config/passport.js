@@ -51,7 +51,8 @@ const configurePassport = () => {
                 email: profile.emails[0].value,
                 googleId: profile.id,
                 avatar: profile.photos[0].value,
-                isVerified: true // Google emails are already verified!
+                isVerified: true, // Google emails are already verified!
+                needsRoleAssignment: true // Force them to pick a role!
             });
 
             done(null, newUser);

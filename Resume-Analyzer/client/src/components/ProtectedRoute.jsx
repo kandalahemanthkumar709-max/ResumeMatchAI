@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
  * enter a private page (like the Dashboard).
  */
 
-export function ProtectedRoute({ allowedRoles }) {
+export function ProtectedRoute({ allowedRoles, skipRoleCheck = false }) {
   // 1. Get the current Auth state from Redux!
   const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
 
@@ -27,6 +27,11 @@ export function ProtectedRoute({ allowedRoles }) {
   // kick them back to the Login page!
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // 3.1 NEW: Force role selection for Google Users (unless already on that page)
+  if (user?.needsRoleAssignment && !skipRoleCheck) {
+    return <Navigate to="/choose-role" replace />;
   }
 
   // 4. WRONG ROLE: Direct users back to their respective dashboards

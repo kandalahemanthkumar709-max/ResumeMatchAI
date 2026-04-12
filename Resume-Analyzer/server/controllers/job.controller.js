@@ -24,6 +24,7 @@ export const createJob = async (req, res, next) => {
         const {
             title, company, companyLogo, location, locationType,
             description, requirements, salary, jobType, expiresAt,
+            education_required
         } = req.body;
 
         if (!title || !company || !description) {
@@ -46,6 +47,12 @@ export const createJob = async (req, res, next) => {
         // Run AI structuring (non-blocking on failure — defaults are set in service)
         console.log('🤖 AI structuring job description...');
         const structuredData = await structureJobDescription(description, title, requirements);
+        
+        // OVERRIDE: If recruiter provided an explicit education level, use it instead of AI inference
+        if (education_required) {
+            structuredData.education_required = education_required;
+        }
+
         console.log('✅ Job structured:', structuredData.required_skills?.join(', '));
 
         const job = await Job.create({
@@ -259,6 +266,12 @@ export const updateJob = async (req, res, next) => {
                 req.body.title || job.title,
                 req.body.requirements || job.requirements
             );
+        }
+
+        // If explicit education update was sent outside of structuredData, move it inside
+        if (req.body.education_required) {
+            if (!req.body.structuredData) req.body.structuredData = { ...job.structuredData };
+            req.body.structuredData.education_required = req.body.education_required;
         }
 
         // new: true → return updated document (not the old one)

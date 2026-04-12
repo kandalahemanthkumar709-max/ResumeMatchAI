@@ -45,6 +45,7 @@ export function PostJob() {
         jobType: 'full-time',     // full-time, part-time, contract, internship
         description: '',
         requirements: '',
+        education_required: 'Bachelor\'s Degree', // Default to common requirement
         salary: {
             min: '',
             max: '',
@@ -78,7 +79,8 @@ export function PostJob() {
                         max: job.salary?.max || '',
                         currency: job.salary?.currency || 'USD',
                         isVisible: job.salary?.isVisible ?? true
-                    }
+                    },
+                    education_required: job.structuredData?.education_required || 'Bachelor\'s Degree'
                 });
             }
         } catch (err) {
@@ -244,6 +246,35 @@ export function PostJob() {
                                 </section>
                             </div>
 
+                            <section className="space-y-4">
+                                <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                                    🎓 Required Education Level
+                                </label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <select 
+                                        name="education_required" 
+                                        value={formData.education_required} 
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                                    >
+                                        <option value="10th Standard / SSC">10th Standard / SSC</option>
+                                        <option value="12th Standard / Intermediate">12th Standard / Intermediate</option>
+                                        <option value="Diploma">Diploma</option>
+                                        <option value="Bachelor's Degree">Bachelor's Degree (B.Tech, B.Sc, B.E)</option>
+                                        <option value="Master's Degree">Master's Degree (M.Tech, M.S, MBA)</option>
+                                        <option value="PhD / Doctorate">PhD / Doctorate</option>
+                                        <option value="Not Specified">Not Specified (Let AI infer)</option>
+                                    </select>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Or type custom (e.g. M.B.B.S)" 
+                                        className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-colors"
+                                        onChange={(e) => setFormData(p => ({ ...p, education_required: e.target.value }))}
+                                        value={['10th Standard / SSC', '12th Standard / Intermediate', 'Diploma', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD / Doctorate', 'Not Specified'].includes(formData.education_required) ? '' : formData.education_required}
+                                    />
+                                </div>
+                            </section>
+
                             <section className="p-6 bg-slate-900/40 border border-slate-800 rounded-2xl space-y-4">
                                 <div className="flex items-center justify-between">
                                     <label className="text-sm font-bold text-slate-300 flex items-center gap-2">
@@ -313,6 +344,10 @@ export function PostJob() {
                                     <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800">
                                         <p className="text-[10px] text-slate-500 uppercase font-bold">Company</p>
                                         <p className="text-white text-sm font-medium truncate">{formData.company}</p>
+                                    </div>
+                                    <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 col-span-2">
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold">Required Education</p>
+                                        <p className="text-white text-sm font-medium truncate">{formData.education_required}</p>
                                     </div>
                                 </div>
                             </section>
