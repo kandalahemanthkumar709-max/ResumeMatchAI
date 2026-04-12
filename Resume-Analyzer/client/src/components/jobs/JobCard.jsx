@@ -82,18 +82,26 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
                 </div>
             )}
 
-            {/* Company info */}
-            <div className="flex items-center gap-3 mb-4">
-                <img 
-                    src={job.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=0ea5e9&color=fff&bold=true`} 
-                    alt={job.company} 
-                    className="w-11 h-11 rounded-xl object-cover bg-slate-800 border border-slate-700/50 shadow-sm"
-                    onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=64748b&color=fff`; }}
-                />
-                <div>
-                    <p className="text-white font-semibold text-sm leading-tight">{job.company}</p>
-                    <p className="text-slate-500 text-xs">{job.location}</p>
+            {/* Company info & Recruiter */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <img 
+                        src={job.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=0ea5e9&color=fff&bold=true`} 
+                        alt={job.company} 
+                        className="w-11 h-11 rounded-xl object-cover bg-slate-800 border border-slate-700/50 shadow-sm"
+                        onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=64748b&color=fff`; }}
+                    />
+                    <div>
+                        <p className="text-white font-semibold text-sm leading-tight">{job.company}</p>
+                        <p className="text-slate-500 text-xs">{job.location}</p>
+                    </div>
                 </div>
+                {job.postedBy?.name && (
+                    <div className="text-right">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Hiring</p>
+                        <p className="text-xs text-cyan-400 font-medium truncate max-w-[100px]">{job.postedBy.name}</p>
+                    </div>
+                )}
             </div>
 
             {/* Job title */}
