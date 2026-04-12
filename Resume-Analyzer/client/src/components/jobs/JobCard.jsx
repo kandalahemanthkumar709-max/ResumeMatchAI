@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, DollarSign, Bookmark, ExternalLink, Briefcase, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, DollarSign, Bookmark, ExternalLink, Briefcase, CheckCircle2, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -132,6 +132,18 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
                             +{job.structuredData.required_skills.length - 4} more
                         </span>
                     )}
+                </div>
+            )}
+
+            {/* AI Insight Preview (New) */}
+            {job.matchReasoning && (
+                <div className="mb-4 p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl relative overflow-hidden group/insight">
+                    <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                        <Zap size={10} fill="currentColor" /> AI Match Insight
+                    </p>
+                    <p className="text-slate-400 text-[11px] leading-relaxed line-clamp-2 italic">
+                        "{job.matchReasoning}"
+                    </p>
                 </div>
             )}
 

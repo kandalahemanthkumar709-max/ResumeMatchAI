@@ -190,8 +190,9 @@ export const getAllJobs = async (req, res, next) => {
                     jobsWithMatches = await Promise.all(jobs.map(async (job) => {
                         const jobObj = job.toObject();
                         try {
-                            const match = await getOrCreateMatch(req.user._id, defResume._id, job._id, { skipAI: true });
+                            const match = await getOrCreateMatch(req.user._id, defResume._id, job._id);
                             jobObj.matchScore = match.overallScore;
+                            jobObj.matchReasoning = match.reasoning; // Capture reasoning too
                         } catch (err) {
                             jobObj.matchScore = null;
                         }
