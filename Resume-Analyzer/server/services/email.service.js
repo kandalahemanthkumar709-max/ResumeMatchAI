@@ -24,15 +24,14 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
                 host: 'smtp.gmail.com',
                 port: 465,
                 secure: true, // Use SSL
+                family: 4,    // FORCE IPv4 (More direct than dns.family)
                 auth: { 
                     user: process.env.GMAIL_USER.trim(), 
                     pass: process.env.GMAIL_PASS.replace(/\s/g, '') 
                 },
-                // FORCE IPv4 to avoid ENETUNREACH on IPv6-heavy environments
-                connectionTimeout: 10000,
-                greetingTimeout: 5000,
-                socketTimeout: 10000,
-                dns: { family: 4 }
+                connectionTimeout: 15000,
+                greetingTimeout: 10000,
+                socketTimeout: 15000
             });
 
             try {
