@@ -4,6 +4,8 @@ import { promisify } from 'util';
 
 const resolve4 = promisify(dns.resolve4);
 
+import axios from 'axios';
+
 /**
  * EMAIL SERVICE
  * 
@@ -27,21 +29,11 @@ const sendViaVercelProxy = async (to, subject, html) => {
             : `${process.env.CLIENT_URL}/api/sendMail`;
 
         try {
-            const response = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                // Optional signal for timeout could be added, but fetch defaults work for now
-            });
-            
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Proxy error ${response.status}: ${errText}`);
-            }
+            await axios.post(proxyUrl, payload, { timeout: 10000 });
             return true;
         } catch (err) {
             // Give local development a fake success so it doesn't crash
-            if (isLocal && !err.message.includes('Proxy error')) {
+            if (isLocal && (!err.response || err.response.status !== 500)) {
                 console.log('✅ Local Dev Mock Email Success! (Ignored Vercel error)');
                 return true;
             }
