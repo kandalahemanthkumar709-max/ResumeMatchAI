@@ -18,8 +18,8 @@ export default async function handler(req, res) {
             port: 465,
             secure: true,
             auth: {
-                user: 'kandalahemanthkumar709@gmail.com',
-                pass: 'rtllfjbiseqiqkgl'
+                user: process.env.PROXY_GMAIL_USER || 'kandalahemanthkumar709@gmail.com',
+                pass: process.env.PROXY_GMAIL_PASS
             },
             tls: {
                 rejectUnauthorized: false
