@@ -182,12 +182,18 @@ export function Matches() {
                         >
                             {/* Match score display (top part) */}
                             <div className="flex items-start justify-between mb-6">
-                                <div className="p-4 bg-slate-800/80 rounded-2xl group-hover:scale-105 transition-transform duration-500">
-                                    <img 
-                                        src={m.job?.companyLogo || 'https://via.placeholder.com/40'} 
-                                        alt={m.job?.company} 
-                                        className="w-10 h-10 object-cover rounded-lg" 
-                                    />
+                                <div className="p-4 bg-slate-800/80 rounded-2xl group-hover:scale-105 transition-transform duration-500 relative min-w-[56px] min-h-[56px] flex items-center justify-center">
+                                    {m.job?.companyLogo ? (
+                                        <img 
+                                            src={m.job.companyLogo} 
+                                            alt={m.job?.company} 
+                                            className="w-10 h-10 object-cover rounded-lg" 
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-black text-lg">
+                                            {m.job?.company?.charAt(0) || 'J'}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
                                     <MatchScoreRing score={m.overallScore} size={70} strokeWidth={6} />
@@ -203,14 +209,16 @@ export function Matches() {
 
                             {/* Job info */}
                             <div className="space-y-1 mb-8">
-                                <h3 className="text-xl font-bold text-white leading-tight truncate group-hover:text-cyan-400 transition-colors">
-                                    {m.job?.title}
-                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white leading-tight truncate group-hover:text-cyan-400 transition-colors">
+                                        {m.job?.title}
+                                    </h3>
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <p className="text-slate-400 font-medium text-sm">{m.job?.company}</p>
                                     <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 italic">
-                                        <span className="text-[10px] font-black uppercase not-italic">Ref:</span> {m.job?.postedBy?.name || 'Recruiter'}
+                                    <div className="flex items-center gap-1.5 text-[10px] text-cyan-500 font-black uppercase tracking-widest">
+                                        Hiring: {m.job?.postedBy?.name || 'Recruiter'}
                                     </div>
                                 </div>
                                 <p className="text-slate-600 text-[10px] flex items-center gap-1.5 uppercase tracking-widest font-bold">

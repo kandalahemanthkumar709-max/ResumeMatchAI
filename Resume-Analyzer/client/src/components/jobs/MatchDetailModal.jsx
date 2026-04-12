@@ -68,16 +68,24 @@ export function MatchDetailModal({ match, onClose, onApply, isApplying }) {
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
                     className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
                 >
-                    {/* Header */}
                     <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <MatchScoreRing score={overallScore} size={50} strokeWidth={4} />
-                            <div>
-                                <h2 className="text-xl font-bold text-white leading-tight">{job?.title}</h2>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-slate-500 text-sm">{job?.company}</p>
-                                    <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                    <p className="text-xs text-slate-400 font-bold tracking-tight">Recruiter: {job?.postedBy?.name || 'Hiring Team'}</p>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700 overflow-hidden">
+                                    {job?.companyLogo ? (
+                                        <img src={job.companyLogo} alt={job?.company} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-cyan-500 font-bold text-sm">{job?.company?.charAt(0) || 'J'}</span>
+                                    )}
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white leading-tight">{job?.title}</h2>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-slate-500 text-sm">{job?.company}</p>
+                                        <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                        <p className="text-xs text-cyan-500 font-black uppercase tracking-widest">Hiring: {job?.postedBy?.name || 'Recruiter'}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
