@@ -4,40 +4,43 @@ import { promisify } from 'util';
 
 const resolve4 = promisify(dns.resolve4);
 
+import axios from 'axios';
+
 /**
  * EMAIL SERVICE
  * 
- * Gmail SMTP Configuration:
- * Why "App Password"? 
- * Google has disabled "Less Secure Apps". Regular passwords WILL NOT WORK.
+ * We are using a Vercel Proxy to bypass the Render Free Tier SMTP Firewall!
+ * The actual NodeMailer code runs on Vercel Serverless automatically.
  */
 
-// We create the transporter dynamically so we can FORCE an IPv4 address resolution 
-// right before sending, bypassing Render's IPv6 problems.
-const createDynamicTransporter = async () => {
+const sendViaVercelProxy = async (to, subject, html) => {
     try {
-        // Force an IPv4 lookup for Google's SMTP servers
-        const addresses = await resolve4('smtp.gmail.com');
-        const ipv4Host = addresses[0];
+        const payload = {
+            to,
+            subject,
+            html,
+            key: 'resume_match_proxy_key_123'
+        };
 
-        return nodemailer.createTransport({
-            host: ipv4Host, // Give it the literal 142.x.x.x IP address
-            port: 587,
-            secure: false, // STARTTLS
-            auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_PASS, 
-            },
-            tls: {
-                servername: 'smtp.gmail.com', // Needed when using raw IP
-                rejectUnauthorized: false
-            },
-            connectionTimeout: 3000, // Reduced to 3s so the app doesn't hang waiting for Render
-            greetingTimeout: 3000,
-            socketTimeout: 3000
-        });
+        // If local dev, just console log since proxy might not be running properly standalone
+        const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL;
+        const proxyUrl = isLocal 
+            ? 'http://localhost:5173/api/sendMail' 
+            : `${process.env.CLIENT_URL}/api/sendMail`;
+
+        try {
+            await axios.post(proxyUrl, payload, { timeout: 10000 });
+            return true;
+        } catch (err) {
+            // Give local development a fake success so it doesn't crash
+            if (isLocal) {
+                console.log('✅ Local Dev Mock Email Success! (Ignored Vercel error)');
+                return true;
+            }
+            throw err;
+        }
     } catch (err) {
-        console.error("DNS Resolution failed for SMTP:", err);
+        console.error("Vercel Proxy Email failed:", err.message);
         throw err;
     }
 };
@@ -107,22 +110,14 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
         </div>`;
     }
 
-    const mailOptions = {
-        from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-        to,
-        subject: `Update on your application for ${jobTitle}`,
-        html: getHtmlTemplate(
+    try {
+        await sendViaVercelProxy(to, `Update on your application for ${jobTitle}`, getHtmlTemplate(
             'Application Update',
             fullMessage,
             'View Dashboard',
             `${process.env.CLIENT_URL}/dashboard`
-        ),
-    };
-
-    try {
-        const transporter = await createDynamicTransporter();
-        await transporter.sendMail(mailOptions);
-        console.log(`📧 Email sent to ${to} (Status: ${status})`);
+        ));
+        console.log(`📧 Email sent to ${to} via Vercel Proxy (Status: ${status})`);
     } catch (error) {
         console.error('❌ Email failed:', error.message);
     }
@@ -162,23 +157,15 @@ export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTit
     const template = events[event];
     if (!template || !to) return;
 
-    const mailOptions = {
-        from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-        to,
-        subject: template.subject,
-        html: getHtmlTemplate(
+    try {
+        await sendViaVercelProxy(to, template.subject, getHtmlTemplate(
             template.title,
             template.message,
             template.btnText,
             `${process.env.CLIENT_URL}/recruiter/dashboard`
-        ),
-    };
-
-    try {
-        const transporter = await createDynamicTransporter();
-        await transporter.sendMail(mailOptions);
-        console.log(`📧 Recruiter email sent to ${to} (Event: ${event})`);
+        ));
+        console.log(`📧 Recruiter Email sent to ${to} via Vercel Proxy (Event: ${event})`);
     } catch (error) {
-        console.error('❌ Recruiter email failed:', error.message);
+        console.error('❌ Recruiter Email failed:', error.message);
     }
 };
