@@ -13,12 +13,13 @@ import axios from 'axios';
  * The actual NodeMailer code runs on Vercel Serverless automatically.
  */
 
-const sendViaVercelProxy = async (to, subject, html) => {
+const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
     try {
         const payload = {
             to,
             subject,
             html,
+            replyTo,
             key: 'resume_match_proxy_key_123'
         };
 
@@ -95,7 +96,7 @@ const getHtmlTemplate = (title, message, btnText, btnLink, details = []) => `
     </div>
 `;
 
-export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, note) => {
+export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, note, replyTo = null) => {
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
         console.error('❌ EMAIL ERROR: GMAIL_USER or GMAIL_PASS is missing in .env');
         return;
@@ -133,7 +134,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
             'View Dashboard',
             `${process.env.CLIENT_URL}/dashboard`,
             seekerDetails
-        ));
+        ), replyTo);
         console.log(`📧 Email sent to ${to} via Vercel Proxy (Status: ${status})`);
     } catch (error) {
         console.error('❌ Email failed:', error.message);
@@ -141,7 +142,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
 };
 
 export const queueEmail = async (emailData) => {
-    await sendStatusUpdateEmail(emailData.to, emailData.name, emailData.jobTitle, emailData.status, emailData.note);
+    await sendStatusUpdateEmail(emailData.to, emailData.name, emailData.jobTitle, emailData.status, emailData.note, emailData.replyTo);
 };
 
 export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTitle, event, coverLetter }) => {

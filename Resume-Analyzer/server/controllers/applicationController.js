@@ -50,13 +50,14 @@ export const applyToJob = async (req, res, next) => {
                     coverLetter
                 }).catch(err => console.error('Recruiter email failed:', err.message));
 
-                // Send seeker email confirmation
+                // Send seeker email confirmation (replyTo recruiter so seeker can reply directly)
                 queueEmail({
                     to: req.user.email,
                     name: req.user.name,
                     jobTitle: job.title,
                     status: 'applied',
-                    note: 'Your cover letter has been successfully attached to your application.'
+                    note: 'Your cover letter has been successfully attached to your application.',
+                    replyTo: job.postedBy.email
                 });
             }
 
@@ -114,12 +115,13 @@ export const applyToJob = async (req, res, next) => {
             }).catch(err => console.error('Recruiter email failed:', err.message));
         }
 
-        // 5. Notify & Email seeker
+        // 5. Notify & Email seeker (replyTo recruiter so seeker can reply directly)
         queueEmail({
             to: req.user.email,
             name: req.user.name,
             jobTitle: job.title,
-            status: 'applied'
+            status: 'applied',
+            replyTo: job.postedBy?.email
         });
 
         res.status(201).json({ success: true, data: application });
@@ -161,12 +163,15 @@ export const updateApplicationStatus = async (req, res, next) => {
             link: `/tracker`
         });
 
+        // Attach recruiter email as replyTo so seeker can respond to the notification email
+        const recruiter = await Job.findById(application.jobId._id).populate('postedBy', 'email');
         queueEmail({
             to: application.seekerId.email,
             name: application.seekerId.name,
             jobTitle: application.jobId.title,
             status,
-            note: notes
+            note: notes,
+            replyTo: recruiter?.postedBy?.email || req.user.email
         });
 
         res.json({ success: true, data: application });

@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { to, subject, html, key } = req.body;
+    const { to, subject, html, key, replyTo } = req.body;
 
     // VERY Simple security key
     if (key !== 'resume_match_proxy_key_123') {
@@ -40,7 +40,8 @@ export default async function handler(req, res) {
             from: `"ResumeMatch AI" <${process.env.VITE_GMAIL_USER || process.env.GMAIL_USER}>`,
             to,
             subject,
-            html
+            html,
+            ...(replyTo && { replyTo })  // When set, hitting "Reply" goes to the recruiter
         });
 
         res.status(200).json({ success: true, message: 'Email sent through Vercel Proxy', info });
