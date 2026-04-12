@@ -35,7 +35,8 @@ export const getMatchesForResume = async (req, res, next) => {
         // 4. Batch fetch job details for the top results (Optimization using $in)
         const jobIds = filtered.map(m => m.jobId);
         const jobsFound = await Job.find({ _id: { $in: jobIds } })
-            .select('title company location locationType jobType companyLogo requirements description structuredData');
+            .select('title company location locationType jobType companyLogo requirements description structuredData postedBy')
+            .populate('postedBy', 'name avatar');
 
         const populated = filtered.map(m => {
             const result = m.toObject();
@@ -107,10 +108,11 @@ export const getSingleMatch = async (req, res, next) => {
         const resume = await Resume.findById(resumeId);
         if (!resume) throw new Error('Resume not found');
 
-        // For single match, we ALWAYS ensure AI reasoning is generated
         const match = await getOrCreateMatch(resume.userId, resumeId, jobId, { skipAI: false });
         const result = match.toObject();
-        result.job = await Job.findById(jobId).select('title company location locationType jobType companyLogo requirements description structuredData');
+        result.job = await Job.findById(jobId)
+            .select('title company location locationType jobType companyLogo requirements description structuredData postedBy')
+            .populate('postedBy', 'name avatar');
         
         res.json({ success: true, data: result });
     } catch (error) {

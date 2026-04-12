@@ -74,7 +74,11 @@ export function MatchDetailModal({ match, onClose, onApply, isApplying }) {
                             <MatchScoreRing score={overallScore} size={50} strokeWidth={4} />
                             <div>
                                 <h2 className="text-xl font-bold text-white leading-tight">{job?.title}</h2>
-                                <p className="text-slate-500 text-sm">{job?.company} • Match Analysis</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-slate-500 text-sm">{job?.company}</p>
+                                    <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                    <p className="text-xs text-slate-400 font-bold tracking-tight">Recruiter: {job?.postedBy?.name || 'Hiring Team'}</p>
+                                </div>
                             </div>
                         </div>
                         <button onClick={onClose} className="p-2 text-slate-500 hover:text-white bg-slate-800 rounded-xl transition-colors">

@@ -206,8 +206,14 @@ export function Matches() {
                                 <h3 className="text-xl font-bold text-white leading-tight truncate group-hover:text-cyan-400 transition-colors">
                                     {m.job?.title}
                                 </h3>
-                                <p className="text-slate-400 font-medium text-sm">{m.job?.company}</p>
-                                <p className="text-slate-600 text-xs flex items-center gap-1.5 uppercase tracking-widest font-bold">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-slate-400 font-medium text-sm">{m.job?.company}</p>
+                                    <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 italic">
+                                        <span className="text-[10px] font-black uppercase not-italic">Ref:</span> {m.job?.postedBy?.name || 'Recruiter'}
+                                    </div>
+                                </div>
+                                <p className="text-slate-600 text-[10px] flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                     {m.job?.location} • {m.job?.jobType}
                                 </p>
                             </div>
