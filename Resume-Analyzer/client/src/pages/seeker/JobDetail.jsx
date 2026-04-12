@@ -246,23 +246,38 @@ export function JobDetail() {
                             </div>
                         </div>
 
-                        <button 
-                            onClick={handleApply}
-                            disabled={submitting || hasApplied}
-                            className={`w-full mt-8 py-4 px-6 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 ${
-                                hasApplied 
-                                ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default' 
-                                : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/20 active:scale-95'
-                            } disabled:opacity-70`}
-                        >
-                            {submitting ? (
-                                <><Loader2 size={20} className="animate-spin" /> Processing...</>
-                            ) : hasApplied ? (
-                                <><CheckCircle2 size={20} /> Applied Successfully</>
+                        {user?.role === 'recruiter' ? (
+                            job.postedBy?._id === user?._id || job.postedBy === user?._id ? (
+                                <button 
+                                    onClick={() => navigate(`/recruiter/jobs/${job._id}/candidates`)}
+                                    className="w-full mt-8 py-4 px-6 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/20 active:scale-95"
+                                >
+                                    View Candidates
+                                </button>
                             ) : (
-                                'Apply for this Position'
-                            )}
-                        </button>
+                                <div className="w-full mt-8 py-4 px-6 rounded-2xl font-bold text-center text-slate-500 bg-slate-900 border border-slate-800">
+                                    Recruiters cannot apply to jobs
+                                </div>
+                            )
+                        ) : (
+                            <button 
+                                onClick={handleApply}
+                                disabled={submitting || hasApplied}
+                                className={`w-full mt-8 py-4 px-6 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 ${
+                                    hasApplied 
+                                    ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default' 
+                                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-cyan-500/20 active:scale-95'
+                                } disabled:opacity-70`}
+                            >
+                                {submitting ? (
+                                    <><Loader2 size={20} className="animate-spin" /> Processing...</>
+                                ) : hasApplied ? (
+                                    <><CheckCircle2 size={20} /> Applied Successfully</>
+                                ) : (
+                                    'Apply for this Position'
+                                )}
+                            </button>
+                        )}
                     </motion.div>
 
                     {/* Job Description */}
