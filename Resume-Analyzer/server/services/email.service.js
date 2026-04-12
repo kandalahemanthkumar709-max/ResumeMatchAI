@@ -32,9 +32,9 @@ const createDynamicTransporter = async () => {
                 servername: 'smtp.gmail.com', // Needed when using raw IP
                 rejectUnauthorized: false
             },
-            connectionTimeout: 20000, 
-            greetingTimeout: 20000,
-            socketTimeout: 30000
+            connectionTimeout: 3000, // Reduced to 3s so the app doesn't hang waiting for Render
+            greetingTimeout: 3000,
+            socketTimeout: 3000
         });
     } catch (err) {
         console.error("DNS Resolution failed for SMTP:", err);
