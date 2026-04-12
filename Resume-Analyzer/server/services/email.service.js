@@ -70,7 +70,7 @@ const getHtmlTemplate = (title, message, btnText, btnLink, details = [], recipie
     <div style="font-family: 'Inter', -apple-system, sans-serif; background-color: #0f172a; padding: 40px 20px; color: #f8fafc;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #1e293b; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.05);">
             <tr>
-                <td align="center" style="padding: 40px; background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+                <td align="center" style="padding: 40px; background: linear-gradient(135deg, ${details?.[2]?.color || '#0ea5e9'} 0%, #2563eb 100%);">
                     <div style="font-weight: 900; color: #ffffff; letter-spacing: -0.05em; font-size: 28px;">
                         ResumeMatch <span style="color: #67e8f9;">AI</span>
                     </div>
@@ -94,7 +94,7 @@ const getHtmlTemplate = (title, message, btnText, btnLink, details = [], recipie
                             ${details.map(detail => `
                             <tr>
                                 <td width="40%" style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${detail.label}</td>
-                                <td width="60%" style="padding: 10px 0; color: #f8fafc; font-size: 14px; font-weight: 600; text-align: right;">${detail.value}</td>
+                                <td width="60%" style="padding: 10px 0; color: ${detail.color || '#f8fafc'}; font-size: 14px; font-weight: 600; text-align: right;">${detail.value}</td>
                             </tr>
                             `).join('')}
                         </table>
@@ -137,8 +137,20 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
 
     let fullMessage = statusMessages[status] || `Your application status has been updated to ${status}.`;
     
+    const colors = {
+        applied: '#f59e0b',    // Amber
+        pending: '#f59e0b',
+        screening: '#10b981',  // Emerald
+        interview: '#0ea5e9',  // Blue
+        offer: '#8b5cf6',      // Purple
+        rejected: '#f43f5e',   // Rose
+        withdrawn: '#64748b'   // Slate
+    };
+
+    const statusColor = colors[status] || '#0ea5e9';
+
     if (note) {
-        fullMessage += `<br/><br/><div style="padding: 15px; background-color: #f1f5f9; border-left: 4px solid #06b6d4; color: #334155; font-style: italic;">
+        fullMessage += `<br/><br/><div style="padding: 15px; background-color: #f1f5f9; border-left: 4px solid ${statusColor}; color: #334155; font-style: italic;">
             <strong>Message from Recruiter:</strong><br/>
             "${note}"
         </div>`;
@@ -147,7 +159,7 @@ export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, no
     const seekerDetails = [
         { label: 'Applicant Name', value: seekerName },
         { label: 'Target Role', value: jobTitle },
-        { label: 'Current Status', value: status.toUpperCase() },
+        { label: 'Current Status', value: status.toUpperCase(), color: statusColor },
         { label: 'Last Updated', value: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }
     ];
 
