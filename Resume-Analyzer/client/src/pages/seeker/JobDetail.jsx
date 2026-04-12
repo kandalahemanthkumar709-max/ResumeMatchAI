@@ -21,6 +21,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import API from '../../services/api';
+import { MatchDetailModal } from '../../components/jobs/MatchDetailModal';
+import { MatchScoreRing } from '../../components/jobs/MatchScoreRing';
 
 /**
  * JobDetail Page
@@ -39,6 +41,7 @@ export function JobDetail() {
     const [submitting, setSubmitting] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
     const [matchData, setMatchData] = useState(null);
+    const [showApplyModal, setShowApplyModal] = useState(false);
 
     useEffect(() => {
         const fetchJobAndMatch = async () => {
@@ -90,7 +93,7 @@ export function JobDetail() {
         fetchJobAndMatch();
     }, [id, isAuthenticated]);
 
-    const handleApply = async () => {
+    const handleApply = async (coverLetter = '') => {
         if (!isAuthenticated) {
             toast.error('Please login to apply');
             navigate('/login');
@@ -104,7 +107,6 @@ export function JobDetail() {
 
         setSubmitting(true);
         try {
-            // 1. Get Seeker's Resumes to find the default one
             const { data: resumeData } = await API.get('/api/resumes');
             const defaultResume = resumeData.data.find(r => r.isDefault) || resumeData.data[0];
 
@@ -114,13 +116,14 @@ export function JobDetail() {
                 return;
             }
 
-            // 2. Submit Application
             await API.post('/api/applications', {
                 jobId: id,
-                resumeId: defaultResume._id
+                resumeId: defaultResume._id,
+                coverLetter: coverLetter || ''
             });
 
             setHasApplied(true);
+            setShowApplyModal(false);
             toast.success('Application submitted successfully!');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to submit application');
@@ -261,7 +264,7 @@ export function JobDetail() {
                             )
                         ) : (
                             <button 
-                                onClick={handleApply}
+                                onClick={() => setShowApplyModal(true)}
                                 disabled={submitting || hasApplied}
                                 className={`w-full mt-8 py-4 px-6 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-3 ${
                                     hasApplied 
@@ -274,7 +277,7 @@ export function JobDetail() {
                                 ) : hasApplied ? (
                                     <><CheckCircle2 size={20} /> Applied Successfully</>
                                 ) : (
-                                    'Apply for this Position'
+                                    'Apply with AI Analysis'
                                 )}
                             </button>
                         )}
@@ -468,7 +471,13 @@ export function JobDetail() {
                     </div>
                 </div>
 
-            </div>
+                <MatchDetailModal 
+                match={showApplyModal ? matchData : null} 
+                onClose={() => setShowApplyModal(false)}
+                onApply={(letter) => handleApply(letter)}
+                isApplying={submitting}
+            />
+        </div>
         </div>
     );
 }

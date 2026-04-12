@@ -178,9 +178,34 @@ export const getAllJobs = async (req, res, next) => {
             Job.countDocuments(query), // total matching count (for pagination UI)
         ]);
 
+        // OPTIMIZATION: If seeker is logged in, attach match scores
+        let jobsWithMatches = jobs.map(j => j.toObject());
+        if (req.user && req.user.role === 'seeker') {
+            try {
+                const { getOrCreateMatch } = await import('../services/matching.service.js');
+                const { default: Resume } = await import('../models/Resume.js');
+                const defResume = await Resume.findOne({ userId: req.user._id, isDefault: true }) || await Resume.findOne({ userId: req.user._id });
+                
+                if (defResume) {
+                    jobsWithMatches = await Promise.all(jobs.map(async (job) => {
+                        const jobObj = job.toObject();
+                        try {
+                            const match = await getOrCreateMatch(req.user._id, defResume._id, job._id, { skipAI: true });
+                            jobObj.matchScore = match.overallScore;
+                        } catch (err) {
+                            jobObj.matchScore = null;
+                        }
+                        return jobObj;
+                    }));
+                }
+            } catch (err) {
+                console.warn('Matches skipped in getAllJobs:', err.message);
+            }
+        }
+
         res.json({
             success: true,
-            data: jobs,
+            data: jobsWithMatches,
             pagination: {
                 total,
                 page:       pageNum,

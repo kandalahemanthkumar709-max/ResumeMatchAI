@@ -262,6 +262,7 @@ export function Jobs() {
                         <JobCard 
                             key={job._id} 
                             job={job} 
+                            matchPct={job.matchScore}
                             index={i} 
                             isApplied={appliedJobIds.has(job._id)} 
                         />
