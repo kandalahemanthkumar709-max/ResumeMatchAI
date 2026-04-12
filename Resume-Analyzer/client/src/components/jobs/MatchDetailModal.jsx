@@ -103,7 +103,7 @@ export function MatchDetailModal({ match, onClose, onApply, isApplying }) {
                             </div>
                             <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3">AI Match Insight</h3>
                             <p className="text-slate-300 leading-relaxed italic">
-                                "{reasoning}"
+                                "{reasoning || 'Compatibility analysis complete based on skills and experience. Proceed with applying to generate a full AI-tailored breakdown...'}"
                             </p>
                         </section>
 
