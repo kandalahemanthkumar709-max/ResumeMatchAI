@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Job from '../models/Job.js';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -13,8 +12,7 @@ const seedJobs = async () => {
         console.log('✅ Connected to MongoDB');
 
         // 1. Restore 3 Recruiters with REAL emails
-        // Use subaddressing (Gmail trick: yourname+recruiter1@gmail.com)
-        // All 3 will deliver to your main inbox kandalahemanthkumar709@gmail.com
+        // Gmail Plus Trick: +sarah and +john all deliver to your main inbox
         const recruiterData = [
             { name: 'Hemanth Recruiter', email: 'kandalahemanthkumar709@gmail.com', password: 'Hemanth@123', role: 'recruiter' },
             { name: 'Sarah HR',          email: 'kandalahemanthkumar709+sarah@gmail.com', password: 'Sarah@123', role: 'recruiter' },
@@ -23,15 +21,11 @@ const seedJobs = async () => {
 
         const recruiters = [];
         for (const data of recruiterData) {
-            // Check if already exists
-            let user = await User.findOne({ email: data.email });
-            if (!user) {
-                const hashed = await bcrypt.hash(data.password, 10);
-                user = await User.create({ ...data, password: hashed });
-                console.log(`👤 Created Recruiter: ${user.name} <${user.email}>`);
-            } else {
-                console.log(`👤 Found existing Recruiter: ${user.name} <${user.email}>`);
-            }
+            // Always delete and re-create to ensure password is hashed correctly
+            await User.deleteOne({ email: data.email });
+            // DO NOT pre-hash here — the model's pre-save hook does it automatically!
+            const user = await User.create(data);
+            console.log(`👤 Created Recruiter: ${user.name} <${user.email}>`);
             recruiters.push(user);
         }
 
