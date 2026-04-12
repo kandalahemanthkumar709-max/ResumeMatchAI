@@ -25,11 +25,10 @@ const transporter = nodemailer.createTransport({
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS, 
     },
-    // FORCE IPv4 ONLY - This is the fix for ENETUNREACH
-    lookup: (hostname, options, callback) => {
-        dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-            callback(err, address, family);
-        });
+    // FORCE IPv4 ONLY - This is the fix for ENETUNREACH on Render!
+    family: 4, 
+    tls: {
+        rejectUnauthorized: false
     },
     connectionTimeout: 20000, // 20 seconds
     greetingTimeout: 20000,
