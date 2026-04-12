@@ -14,7 +14,9 @@ export default async function handler(req, res) {
 
     try {
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
                 user: 'kandalahemanthkumar709@gmail.com',
                 pass: 'rtllfjbiseqiqkgl'
@@ -24,7 +26,7 @@ export default async function handler(req, res) {
             }
         });
 
-        await transporter.sendMail({
+        const info = await transporter.sendMail({
             from: '"ResumeMatch AI" <kandalahemanthkumar709@gmail.com>',
             to,
             subject,
@@ -32,9 +34,13 @@ export default async function handler(req, res) {
             ...(replyTo && { replyTo })
         });
 
-        return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true, messageId: info.messageId });
     } catch (error) {
-        console.error('Proxy Email Error:', error);
-        return res.status(500).json({ success: false, error: error.message });
+        console.error('SERVERLESS PROXY ERROR:', error);
+        return res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            stack: error.stack // Added for debugging
+        });
     }
 }

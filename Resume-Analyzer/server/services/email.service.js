@@ -20,23 +20,21 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
             ? 'http://localhost:5173/api/sendMail' 
             : `${process.env.CLIENT_URL}/api/sendMail`;
 
-        console.log(`🌐 [Proxy] Attempting to deliver via ${isLocal ? 'Local Vite' : 'Vercel'}...`);
-        
         const response = await axios.post(proxyUrl, {
             to, subject, html, replyTo,
             key: 'resume_match_proxy_key_123'
         }, { timeout: 15000 });
 
         if (response.data.success) {
-            console.log('✨ [Proxy] Email delivered successfully.');
+            console.log(`✨ [Email] Delivered to ${to}`);
             return { success: true, method: 'PROXY' };
         }
-        
-        return { success: false, error: 'Proxy returned failure' };
+        return { success: false, error: 'Proxy failed to deliver' };
 
     } catch (err) {
-        console.error(`❌ [Proxy] Failed:`, err.response?.data?.message || err.message);
-        return { success: false, error: err.message };
+        const errorDetail = err.response?.data?.error || err.response?.data?.message || err.message;
+        console.error(`❌ [Email Proxy] Failed:`, errorDetail);
+        return { success: false, error: errorDetail };
     }
 };
 
