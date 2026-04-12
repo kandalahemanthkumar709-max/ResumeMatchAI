@@ -45,18 +45,33 @@ export const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email }).select('+password');
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id),
-            });
-        } else {
+
+        // Case 1: No user found at all
+        if (!user) {
             res.status(401);
-            throw new Error('Invalid email or password');
+            throw new Error('No account found with this email. Please register first.');
         }
+
+        // Case 2: Account exists but was created via Google OAuth (no password set)
+        if (user.googleId && !user.password) {
+            res.status(401);
+            throw new Error('This account was created with Google Sign-In. Please use the "Continue with Google" button to log in.');
+        }
+
+        // Case 3: Wrong password
+        if (!(await user.matchPassword(password))) {
+            res.status(401);
+            throw new Error('Incorrect password. Please try again.');
+        }
+
+        // Case 4: Success!
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id),
+        });
     } catch (error) {
         next(error);
     }
