@@ -7,8 +7,15 @@ import axios from 'axios';
  * and BEFORE a response reaches your code (to handle errors globally).
  */
 
+const getBaseURL = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    return isLocal ? 'http://localhost:5000' : 'https://resumematchai-m9tq.onrender.com';
+};
+
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
+    baseURL: getBaseURL(),
     headers: {
         'Content-Type': 'application/json'
     }

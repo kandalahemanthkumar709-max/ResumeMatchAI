@@ -5,8 +5,15 @@ import axios from 'axios';
  * Consistent with client/src/api/axios.js
  */
 
+const getBaseURL = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    return isLocal ? 'http://localhost:5000' : 'https://resumematchai-m9tq.onrender.com';
+};
+
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || `${window.location.origin}`,
+    baseURL: getBaseURL(),
     headers: {
         'Content-Type': 'application/json',
     }

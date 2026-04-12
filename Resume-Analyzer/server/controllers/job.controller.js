@@ -304,7 +304,7 @@ export const getMyJobs = async (req, res, next) => {
     try {
         const jobs = await Job.find({ postedBy: req.user._id })
             .sort({ createdAt: -1 })
-            .select('title status applicationCount viewCount createdAt locationType jobType');
+            .select('title status description applicationCount viewCount createdAt locationType jobType');
 
         // ── Date boundaries for trend calculations ──
         const now = new Date();

@@ -178,7 +178,9 @@ export function RecruiterDashboard() {
                                     </div>
 
                                     <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed italic">
-                                        "{job.description.substring(0, 100)}..."
+                                        "{ (job && job.description && typeof job.description === 'string') 
+                                            ? job.description.substring(0, 100) 
+                                            : 'No description provided' }..."
                                     </p>
                                 </div>
 

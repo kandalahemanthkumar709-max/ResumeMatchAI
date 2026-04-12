@@ -20,8 +20,8 @@ Analyze this job posting and extract structured information.
 Return ONLY a valid JSON object.
 
 JOB TITLE: ${title}
-JOB DESCRIPTION: ${rawDescription.substring(0, 3000)}
-REQUIREMENTS: ${requirements.substring(0, 1000)}
+JOB DESCRIPTION: ${(rawDescription || '').substring(0, 3000)}
+REQUIREMENTS: ${(requirements || '').substring(0, 1000)}
 
 Return JSON including: required_skills[], nice_to_have_skills[], min_experience_years, education_required, responsibilities[], seniority_level, key_technologies[]`;
 

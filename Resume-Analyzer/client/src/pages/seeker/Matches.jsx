@@ -215,7 +215,7 @@ export function Matches() {
                             {/* AI Bite-sized summary */}
                             <div className="p-4 bg-slate-950/40 rounded-2xl border border-slate-800/50 mb-8">
                                 <p className="text-slate-400 text-xs leading-relaxed line-clamp-3 italic">
-                                    "{m.reasoning.split('.')[0]}."
+                                    "{ (m.reasoning && typeof m.reasoning === 'string') ? m.reasoning.split('.')[0] : 'No detailed explanation' }."
                                 </p>
                             </div>
 

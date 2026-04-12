@@ -122,7 +122,7 @@ export function PostJob() {
 
         try {
             if (isEditing) {
-                await API.put(`/api/jobs/${jobId}`, formData);
+                await API.patch(`/api/jobs/${jobId}`, formData);
             } else {
                 await API.post('/api/jobs', formData);
             }
@@ -132,7 +132,7 @@ export function PostJob() {
                 navigate('/recruiter/dashboard');
             }, 2500);
         } catch (err) {
-            console.error('Job Posting Error:', err);
+            console.error('Job Update/Post Error:', err);
             const msg = err.response?.data?.message || err.message || 'Failed to save job. Please try again.';
             setError(msg);
             setAiProcessing(false);
