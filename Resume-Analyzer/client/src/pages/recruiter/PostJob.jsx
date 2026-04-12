@@ -173,7 +173,7 @@ export function PostJob() {
                 <p className="text-slate-400">{isEditing ? `Refining "${formData.title}"` : 'Reach the best talent with our AI-powered matching system.'}</p>
             </header>
 
-            <StepIndicator />
+            <StepIndicator step={step} />
 
             <form onSubmit={step === 4 ? handleSubmit : e => e.preventDefault()} className="space-y-8">
                 
@@ -353,3 +353,30 @@ export function PostJob() {
         </div>
     );
 }
+
+function StepIndicator({ step }) {
+    const steps = [
+        { num: 1, label: 'Basics' },
+        { num: 2, label: 'Details' },
+        { num: 3, label: 'Description' },
+        { num: 4, label: 'Review' }
+    ];
+
+    return (
+        <div className="flex items-center justify-between mb-12 relative px-4">
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-800 -translate-y-1/2 -z-10 mx-10" />
+            {steps.map((s) => (
+                <div key={s.num} className="flex flex-col items-center gap-2">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all shadow-lg
+                        ${step >= s.num ? 'bg-cyan-500 text-slate-950 scale-110 shadow-cyan-500/20' : 'bg-slate-800 text-slate-500'}`}>
+                        {step > s.num ? <CheckCircle2 size={18} /> : s.num}
+                    </div>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${step >= s.num ? 'text-white' : 'text-slate-600'}`}>
+                        {s.label}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
