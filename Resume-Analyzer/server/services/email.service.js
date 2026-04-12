@@ -19,25 +19,41 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
         
         // 1. LOCAL/SMTP FALLBACK (Preferred for reliability and speed)
         if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-            console.log(`📡 [SMTP] Sending email to ${to}...`);
+            console.log(`📡 [SMTP] Attempting connection for ${to}...`);
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true, // Use SSL
                 auth: { 
                     user: process.env.GMAIL_USER.trim(), 
-                    pass: process.env.GMAIL_PASS.trim() 
-                }
+                    pass: process.env.GMAIL_PASS.replace(/\s/g, '') 
+                },
+                // FORCE IPv4 to avoid ENETUNREACH on IPv6-heavy environments
+                connectionTimeout: 10000,
+                greetingTimeout: 5000,
+                socketTimeout: 10000,
+                dns: { family: 4 }
             });
 
-            await transporter.sendMail({
-                from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-                to,
-                subject,
-                html,
-                ...(replyTo && { replyTo })
-            });
+            try {
+                // Verify connection configuration
+                await transporter.verify();
+                console.log('✅ [SMTP] Connection verified.');
 
-            console.log('✅ [SMTP] Email delivered successfully.');
-            return true;
+                const info = await transporter.sendMail({
+                    from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
+                    to,
+                    subject,
+                    html,
+                    ...(replyTo && { replyTo })
+                });
+
+                console.log('✨ [SMTP] Email sent! Message ID:', info.messageId);
+                return true;
+            } catch (smtpErr) {
+                console.error('❌ [SMTP] Delivery failed:', smtpErr.message);
+                throw smtpErr; // send to outer catch
+            }
         }
 
         // 2. PRODUCTION PROXY (Only if direct SMTP is blocked)
