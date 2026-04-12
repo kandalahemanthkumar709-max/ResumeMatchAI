@@ -41,10 +41,6 @@ const createDynamicTransporter = async () => {
         throw err;
     }
 };
-        console.log('📬 Email System: Ready to deliver'.green.bold);
-    }
-});
-*/
 
 /**
  * HTML EMAIL TEMPLATE
