@@ -16,8 +16,11 @@ export default async function handler(req, res) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.VITE_GMAIL_USER || 'kandalahemanthkumar709@gmail.com',
-                pass: (process.env.VITE_GMAIL_PASS || 'rtllfjbiseqiqkgl').replace(/\s/g, '')
+                user: 'kandalahemanthkumar709@gmail.com',
+                pass: 'rtllfjbiseqiqkgl'
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         });
 
@@ -32,6 +35,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
     } catch (error) {
         console.error('Proxy Email Error:', error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 }
