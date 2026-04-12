@@ -227,9 +227,11 @@ export function Matches() {
                             </div>
 
                             {/* AI Bite-sized summary */}
-                            <div className="p-4 bg-slate-950/40 rounded-2xl border border-slate-800/50 mb-8">
-                                <p className="text-slate-400 text-xs leading-relaxed line-clamp-3 italic">
-                                    "{m.reasoning.split('.')[0]}."
+                            <div className="p-4 bg-slate-950/40 rounded-2xl border border-slate-800/50 mb-8 min-h-[60px] flex items-center">
+                                <p className="text-slate-400 text-[11px] leading-relaxed line-clamp-2 italic">
+                                    {m.reasoning 
+                                        ? `"${m.reasoning.split('.')[0]}."` 
+                                        : "Compatibility analysis complete. Click below for detailed AI reasoning and resume feedback."}
                                 </p>
                             </div>
 
