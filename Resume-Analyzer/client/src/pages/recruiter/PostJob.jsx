@@ -343,7 +343,7 @@ export function PostJob() {
                             {aiProcessing ? (
                                 <><Loader2 size={18} className="animate-spin" /> AI is structuring...</>
                             ) : (
-                                <>Publish Job <ArrowRight size={18} /></>
+                                <>{isEditing ? 'Save Changes' : 'Publish Job'} <ArrowRight size={18} /></>
                             )}
                         </button>
                     )}

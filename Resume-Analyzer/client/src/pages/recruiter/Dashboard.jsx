@@ -197,6 +197,7 @@ export function RecruiterDashboard() {
                                                     <ExternalLink size={16} />
                                                 </button>
                                                 <button 
+                                                    onClick={() => navigate(`/recruiter/jobs/${job._id}/edit`)}
                                                     className="p-2 text-slate-500 hover:text-white bg-slate-800 rounded-lg transition-colors border border-transparent"
                                                     title="Edit Post"
                                                 >
