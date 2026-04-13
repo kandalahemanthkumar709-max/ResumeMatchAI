@@ -1,65 +1,44 @@
 
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 /**
- * RENDER-OPTIMIZED EMAIL SERVICE
+ * VERCEL-PROXY EMAIL SERVICE
  * 
- * Key features:
- * 1. Forced IPv4 (family: 4) to avoid Render's ENETUNREACH errors.
- * 2. Port 587 with STARTTLS for cloud-provider compatibility.
- * 3. Robust timeouts to prevent server hangs.
- * 4. Direct delivery (no proxy needed on backend).
+ * Since Render blocks outbound SMTP (ETIMEDOUT), we route emails 
+ * through a Vercel Serverless Function which acts as our private Email API.
  */
 
-const createTransporter = () => {
-    const user = (process.env.GMAIL_USER || '').trim();
-    const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
+const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
+    try {
+        // Use the live Vercel URL for the API
+        const vercelUrl = process.env.CLIENT_URL || 'https://resume-match-ai-phi.vercel.app';
+        const proxyUrl = `${vercelUrl}/api/sendMail`;
 
-    if (!user || !pass) {
-        console.warn('⚠️ GMAIL_USER or GMAIL_PASS missing from env. Emails will be skipped.');
-        return null;
+        console.log(`🌐 [Email] Routing via Vercel API: ${to}`);
+        
+        const response = await axios.post(proxyUrl, {
+            to, subject, html, replyTo,
+            key: 'resume_match_proxy_key_123'
+        });
+
+        if (response.data.success) {
+            console.log(`✅ [Email] Delivered via Vercel for: ${to}`);
+            return { success: true };
+        } else {
+            return { success: false, error: response.data.error };
+        }
+    } catch (error) {
+        const errorMsg = error.response?.data?.error || error.message;
+        console.error(`❌ [Email] Vercel Proxy Failed for ${to}:`, errorMsg);
+        return { success: false, error: errorMsg };
     }
-
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // STARTTLS
-        family: 4,     // FORCE IPV4 (Critical for Render)
-        auth: { user, pass },
-        tls: { 
-            rejectUnauthorized: false,
-            minVersion: 'TLSv1.2' 
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 30000
-    });
 };
 
 /**
  * Core Sending Function
  */
 const sendEmail = async (to, subject, html, replyTo = null) => {
-    try {
-        const transporter = createTransporter();
-        if (!transporter) return { success: false, error: 'Service not configured' };
-
-        console.log(`🌐 [Email] Direct delivery attempt to: ${to}`);
-        
-        await transporter.sendMail({
-            from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-            to,
-            subject,
-            html,
-            ...(replyTo && { replyTo })
-        });
-
-        console.log(`✅ [Email] Delivered successfully to: ${to}`);
-        return { success: true };
-    } catch (error) {
-        console.error(`❌ [Email] Failed for ${to}:`, error.message);
-        return { success: false, error: error.message };
-    }
+    return sendViaVercelProxy(to, subject, html, replyTo);
 };
 
 /**
