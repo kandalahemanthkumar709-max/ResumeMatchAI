@@ -30,9 +30,7 @@ export default async function handler(req, res) {
         const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
         if (!pass) {
-            const error = `[V3] Missing Password. Keys seen: ${keys.filter(k => !k.includes('SECRET')).join(', ')}`;
-            console.error(error);
-            return res.status(500).json({ success: false, error: 'Gmail password (GMAIL_PASS) was not found in Vercel settings.' });
+            return res.status(500).json({ success: false, error: 'Email service configuration incomplete.' });
         }
 
         const transporter = nodemailer.createTransport({
