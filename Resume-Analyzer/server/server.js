@@ -95,10 +95,11 @@ app.post('/api/sendMail', async (req, res) => {
     if (key !== 'resume_match_proxy_key_123') return res.status(401).json({ message: 'Unauthorized' });
 
     try {
+        console.log('🌐 [API] Initializing SMTP transporter for:', to);
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
-            secure: false, // Use STARTTLS
+            secure: false,
             auth: { 
                 user: (process.env.GMAIL_USER || '').trim(), 
                 pass: (process.env.GMAIL_PASS || '').replace(/\s/g, '') 
@@ -106,14 +107,19 @@ app.post('/api/sendMail', async (req, res) => {
             tls: { 
                 rejectUnauthorized: false,
                 minVersion: 'TLSv1.2'
-            }
+            },
+            connectionTimeout: 10000, // 10 seconds
+            greetingTimeout: 10000,
+            socketTimeout: 20000
         });
 
+        console.log('📤 [API] Attempting to send mail to:', to);
         await transporter.sendMail({
             from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
             to, subject, html,
             ...(replyTo && { replyTo })
         });
+        console.log('✅ [API] Mail sent successfully to:', to);
 
         res.status(200).json({ success: true });
     } catch (error) {
