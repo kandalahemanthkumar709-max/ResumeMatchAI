@@ -21,16 +21,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        const user = (process.env.GMAIL_USER || '').trim();
-        const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
+        // Priority: Request Body (Tunneling) > Vercel Env Variables
+        const user = (req.body.user || process.env.GMAIL_USER || '').trim();
+        const pass = (req.body.pass || process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
         if (!user || !pass) {
-            const missing = [];
-            if (!user) missing.push('GMAIL_USER');
-            if (!pass) missing.push('GMAIL_PASS');
-            const error = `Missing on Vercel: ${missing.join(', ')}. Please add them to Vercel Environment Variables.`;
-            console.error(error);
-            return res.status(500).json({ success: false, error });
+            console.error('MISSING CREDENTIALS (TUNNELING FAILED)');
+            return res.status(500).json({ success: false, error: 'Credentials missing in both request and Vercel environment.' });
         }
 
         const transporter = nodemailer.createTransport({
