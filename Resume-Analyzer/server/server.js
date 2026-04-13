@@ -90,6 +90,7 @@ app.use(passport.initialize());
 
 // 0. INTERNAL EMAIL PROXY (High Priority)
 app.post('/api/sendMail', async (req, res) => {
+    console.log('📬 [API] Incoming email request for:', req.body.to);
     const { to, subject, html, replyTo, key } = req.body;
     if (key !== 'resume_match_proxy_key_123') return res.status(401).json({ message: 'Unauthorized' });
 
