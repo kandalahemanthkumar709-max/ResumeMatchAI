@@ -90,6 +90,8 @@ export const applyToJob = async (req, res, next) => {
         }
 
         // 4. Notify + Email recruiter about new application
+        console.log(`📣 [App] Triggering notifications for applicant: ${req.user.name}`);
+        
         await Notification.create({
             userId: job.postedBy._id,
             message: `🚀 ${req.user.name} applied for "${job.title}"${coverLetter ? ' with a cover letter' : ''}.`,
@@ -105,6 +107,7 @@ export const applyToJob = async (req, res, next) => {
 
         // Send recruiter email (non-blocking)
         if (job.postedBy && job.postedBy.email) {
+            console.log(`✉️ [App] Sending recruiter email to: ${job.postedBy.email}`);
             sendRecruiterEmail({
                 to: job.postedBy.email,
                 recruiterName: job.postedBy.name || 'Recruiter',
@@ -112,17 +115,18 @@ export const applyToJob = async (req, res, next) => {
                 jobTitle: job.title,
                 event: 'new_application',
                 coverLetter: coverLetter
-            }).catch(err => console.error('Recruiter email failed:', err.message));
+            }).catch(err => console.error('❌ [App] Recruiter email failed:', err.message));
         }
 
         // 5. Notify & Email seeker (replyTo recruiter so seeker can reply directly)
+        console.log(`✉️ [App] Sending seeker confirmation to: ${req.user.email}`);
         queueEmail({
             to: req.user.email,
             name: req.user.name,
             jobTitle: job.title,
             status: 'applied',
             replyTo: job.postedBy?.email
-        });
+        }).catch(err => console.error('❌ [App] Seeker email failed:', err.message));
 
         res.status(201).json({ success: true, data: application });
     } catch (error) {
