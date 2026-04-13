@@ -25,8 +25,12 @@ export default async function handler(req, res) {
         const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
         if (!user || !pass) {
-            console.error('MISSING CREDENTIALS IN VERCEL DASHBOARD');
-            return res.status(500).json({ success: false, error: 'Email service not configured in Vercel. Please add GMAIL_USER and GMAIL_PASS to Vercel environment variables.' });
+            const missing = [];
+            if (!user) missing.push('GMAIL_USER');
+            if (!pass) missing.push('GMAIL_PASS');
+            const error = `Missing on Vercel: ${missing.join(', ')}. Please add them to Vercel Environment Variables.`;
+            console.error(error);
+            return res.status(500).json({ success: false, error });
         }
 
         const transporter = nodemailer.createTransport({
