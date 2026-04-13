@@ -12,7 +12,7 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
     try {
         // Use the live Vercel URL for the API
         const vercelUrl = process.env.CLIENT_URL || 'https://resume-match-ai-phi.vercel.app';
-        const proxyUrl = `${vercelUrl}/api/sendMail`;
+        const proxyUrl = `${vercelUrl}/api/dispatchEmail`;
 
         console.log(`🌐 [Email] Routing via Vercel API: ${to}`);
         

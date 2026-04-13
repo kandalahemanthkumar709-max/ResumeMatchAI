@@ -21,12 +21,17 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('🔍 [Vercel API] Checking Environment Keys...');
+        const keys = Object.keys(process.env);
+        console.log(`🔍 [Vercel API] Available keys: ${keys.filter(k => k.includes('GMAIL') || k.includes('URL')).join(', ')}`);
+
         const user = (process.env.GMAIL_USER || '').trim();
         const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
         if (!user || !pass) {
-            console.error('MISSING CREDENTIALS IN VERCEL DASHBOARD');
-            return res.status(500).json({ success: false, error: 'Email service not configured in Vercel. Please add GMAIL_USER and GMAIL_PASS to Vercel environment variables and REDEPLOY.' });
+            const error = `[V2] Vercel Env Failure. User: ${user ? 'FOUND' : 'MISSING'}, Pass: ${pass ? 'FOUND' : 'MISSING'}. Keys seen: ${keys.filter(k => !k.includes('SECRET') && !k.includes('KEY')).join(', ')}`;
+            console.error(error);
+            return res.status(500).json({ success: false, error });
         }
 
         const transporter = nodemailer.createTransport({
