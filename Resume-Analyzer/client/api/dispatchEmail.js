@@ -25,13 +25,14 @@ export default async function handler(req, res) {
         const keys = Object.keys(process.env);
         console.log(`🔍 [Vercel API] Available keys: ${keys.filter(k => k.includes('GMAIL') || k.includes('URL')).join(', ')}`);
 
-        const user = (process.env.GMAIL_USER || '').trim();
+        // Automatic fallback for GMAIL_USER if Vercel dashboard has a typo
+        const user = (process.env.GMAIL_USER || 'kandalahemanthkumar709@gmail.com').trim();
         const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
-        if (!user || !pass) {
-            const error = `[V2] Vercel Env Failure. User: ${user ? 'FOUND' : 'MISSING'}, Pass: ${pass ? 'FOUND' : 'MISSING'}. Keys seen: ${keys.filter(k => !k.includes('SECRET') && !k.includes('KEY')).join(', ')}`;
+        if (!pass) {
+            const error = `[V3] Missing Password. Keys seen: ${keys.filter(k => !k.includes('SECRET')).join(', ')}`;
             console.error(error);
-            return res.status(500).json({ success: false, error });
+            return res.status(500).json({ success: false, error: 'Gmail password (GMAIL_PASS) was not found in Vercel settings.' });
         }
 
         const transporter = nodemailer.createTransport({
