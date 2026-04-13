@@ -20,6 +20,8 @@ import matchRoutes from './routes/matchRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import nodemailer from 'nodemailer';
+import { sendStatusUpdateEmail, sendRecruiterEmail } from './services/email.service.js';
 
 import configurePassport from './config/passport.js';
 import passport from 'passport';
@@ -85,6 +87,35 @@ app.use(passport.initialize());
 // ---------------------------------------------------------
 // ROUTES
 // ---------------------------------------------------------
+
+// 0. INTERNAL EMAIL PROXY (High Priority)
+app.post('/api/sendMail', async (req, res) => {
+    const { to, subject, html, replyTo, key } = req.body;
+    if (key !== 'resume_match_proxy_key_123') return res.status(401).json({ message: 'Unauthorized' });
+
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { 
+                user: (process.env.GMAIL_USER || '').trim(), 
+                pass: (process.env.GMAIL_PASS || '').replace(/\s/g, '') 
+            },
+            tls: { rejectUnauthorized: false }
+        });
+
+        await transporter.sendMail({
+            from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
+            to, subject, html,
+            ...(replyTo && { replyTo })
+        });
+
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('SERVER MAIL ERROR:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -117,38 +148,6 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-// ---------------------------------------------------------
-// INTERNAL EMAIL PROXY (Bypass for local/prod firewalls)
-// ---------------------------------------------------------
-import { sendStatusUpdateEmail, sendRecruiterEmail } from './services/email.service.js';
-import nodemailer from 'nodemailer';
-
-app.post('/api/sendMail', async (req, res) => {
-    const { to, subject, html, replyTo, key } = req.body;
-    if (key !== 'resume_match_proxy_key_123') return res.status(401).json({ message: 'Unauthorized' });
-
-    try {
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { 
-                user: process.env.GMAIL_USER.trim(), 
-                pass: process.env.GMAIL_PASS.replace(/\s/g, '') 
-            },
-            tls: { rejectUnauthorized: false }
-        });
-
-        await transporter.sendMail({
-            from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
-            to, subject, html,
-            ...(replyTo && { replyTo })
-        });
-
-        res.status(200).json({ success: true });
-    } catch (error) {
-        console.error('SERVER MAIL ERROR:', error.message);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
 
 // ERROR HANDLING
 app.use(notFound);
