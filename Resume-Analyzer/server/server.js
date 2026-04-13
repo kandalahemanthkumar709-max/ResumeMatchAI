@@ -96,12 +96,17 @@ app.post('/api/sendMail', async (req, res) => {
 
     try {
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, // Use STARTTLS
             auth: { 
                 user: (process.env.GMAIL_USER || '').trim(), 
                 pass: (process.env.GMAIL_PASS || '').replace(/\s/g, '') 
             },
-            tls: { rejectUnauthorized: false }
+            tls: { 
+                rejectUnauthorized: false,
+                minVersion: 'TLSv1.2'
+            }
         });
 
         await transporter.sendMail({
