@@ -100,6 +100,7 @@ app.post('/api/sendMail', async (req, res) => {
             host: 'smtp.gmail.com',
             port: 587,
             secure: false,
+            family: 4, // FORCE IPV4 ONLY (Resolves ENETUNREACH on Render)
             auth: { 
                 user: (process.env.GMAIL_USER || '').trim(), 
                 pass: (process.env.GMAIL_PASS || '').replace(/\s/g, '') 
@@ -108,9 +109,9 @@ app.post('/api/sendMail', async (req, res) => {
                 rejectUnauthorized: false,
                 minVersion: 'TLSv1.2'
             },
-            connectionTimeout: 10000, // 10 seconds
-            greetingTimeout: 10000,
-            socketTimeout: 20000
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 30000
         });
 
         console.log('📤 [API] Attempting to send mail to:', to);
