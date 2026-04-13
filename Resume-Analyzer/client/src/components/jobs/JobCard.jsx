@@ -69,21 +69,8 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
                        hover:border-slate-600 hover:bg-slate-900/80 transition-all duration-300 cursor-pointer"
             onClick={() => navigate(`/jobs/${job._id}`)}
         >
-            {/* Match badge (top-right) */}
-            {matchPct !== null && (
-                <div className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-xs font-bold border ${matchColor}`}>
-                    {matchPct}% Match
-                </div>
-            )}
-
-            {isApplied && (
-                <div className="absolute top-14 right-4 px-2 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg shadow-blue-500/10">
-                    <CheckCircle2 size={10} /> Applied
-                </div>
-            )}
-
-            {/* Company info & Recruiter */}
-            <div className="flex items-center justify-between mb-4">
+            {/* Header: Company & Badges */}
+            <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <img 
                         src={job.companyLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(job.company)}&background=0ea5e9&color=fff&bold=true`} 
@@ -96,12 +83,25 @@ export function JobCard({ job, matchPct = null, index = 0, isApplied = false }) 
                         <p className="text-slate-500 text-xs">{job.location}</p>
                     </div>
                 </div>
-                {job.postedBy?.name && (
-                    <div className="text-right">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Hiring</p>
-                        <p className="text-xs text-cyan-400 font-medium truncate max-w-[100px]">{job.postedBy.name}</p>
-                    </div>
-                )}
+
+                <div className="flex flex-col items-end gap-2">
+                    {matchPct !== null && (
+                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${matchColor} shadow-lg shadow-emerald-500/5`}>
+                            {matchPct}% Match
+                        </div>
+                    )}
+                    {isApplied && (
+                        <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-md text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
+                            <CheckCircle2 size={10} /> Applied
+                        </div>
+                    )}
+                    {job.postedBy?.name && (
+                        <div className="text-right mt-1">
+                            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black opacity-60">Hiring Team</p>
+                            <p className="text-[11px] text-cyan-400 font-bold truncate max-w-[120px]">{job.postedBy.name}</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Job title */}
