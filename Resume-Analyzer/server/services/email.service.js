@@ -1,216 +1,212 @@
+
 import nodemailer from 'nodemailer';
-import dns from 'dns';
-import { promisify } from 'util';
-
-const resolve4 = promisify(dns.resolve4);
-
-import axios from 'axios';
 
 /**
- * EMAIL SERVICE
+ * RENDER-OPTIMIZED EMAIL SERVICE
  * 
- * We are using a Vercel Proxy to bypass the Render Free Tier SMTP Firewall!
- * The actual NodeMailer code runs on Vercel Serverless automatically.
+ * Key features:
+ * 1. Forced IPv4 (family: 4) to avoid Render's ENETUNREACH errors.
+ * 2. Port 587 with STARTTLS for cloud-provider compatibility.
+ * 3. Robust timeouts to prevent server hangs.
+ * 4. Direct delivery (no proxy needed on backend).
  */
 
-const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
+const createTransporter = () => {
+    const user = (process.env.GMAIL_USER || '').trim();
+    const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
+
+    if (!user || !pass) {
+        console.warn('⚠️ GMAIL_USER or GMAIL_PASS missing from env. Emails will be skipped.');
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // STARTTLS
+        family: 4,     // FORCE IPV4 (Critical for Render)
+        auth: { user, pass },
+        tls: { 
+            rejectUnauthorized: false,
+            minVersion: 'TLSv1.2' 
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 30000
+    });
+};
+
+/**
+ * Core Sending Function
+ */
+const sendEmail = async (to, subject, html, replyTo = null) => {
     try {
-        const port = process.env.PORT || 5000;
-        const proxyUrl = `http://127.0.0.1:${port}/api/sendMail`;
+        const transporter = createTransporter();
+        if (!transporter) return { success: false, error: 'Service not configured' };
 
-        const response = await axios.post(proxyUrl, {
-            to, subject, html, replyTo,
-            key: 'resume_match_proxy_key_123'
-        }, { timeout: 15000 });
+        console.log(`🌐 [Email] Direct delivery attempt to: ${to}`);
+        
+        await transporter.sendMail({
+            from: `"ResumeMatch AI" <${process.env.GMAIL_USER}>`,
+            to,
+            subject,
+            html,
+            ...(replyTo && { replyTo })
+        });
 
-        if (response.data.success) {
-            console.log(`✨ [Email] Delivered to ${to}`);
-            return { success: true, method: 'PROXY' };
-        }
-        return { success: false, error: 'Proxy failed to deliver' };
-
-    } catch (err) {
-        const errorDetail = err.response?.data?.error || err.response?.data?.message || err.message;
-        console.error(`❌ [Email Proxy] Failed:`, errorDetail);
-        return { success: false, error: errorDetail };
+        console.log(`✅ [Email] Delivered successfully to: ${to}`);
+        return { success: true };
+    } catch (error) {
+        console.error(`❌ [Email] Failed for ${to}:`, error.message);
+        return { success: false, error: error.message };
     }
 };
 
-const getHtmlTemplate = (title, message, btnText, btnLink, details = [], recipientName = '') => `
-    <div style="font-family: 'Inter', -apple-system, sans-serif; background-color: #0f172a; padding: 40px 20px; color: #f8fafc;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #1e293b; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.05);">
-            <tr>
-                <td align="center" style="padding: 40px; background: linear-gradient(135deg, ${details?.[2]?.color || '#0ea5e9'} 0%, #2563eb 100%);">
-                    <div style="font-weight: 900; color: #ffffff; letter-spacing: -0.05em; font-size: 28px;">
-                        ResumeMatch <span style="color: #67e8f9;">AI</span>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding: 48px 40px;">
-                    <h2 style="color: #ffffff; margin: 0 0 16px 0; font-size: 24px; font-weight: 800; letter-spacing: -0.025em;">${title}</h2>
-                    
-                    <div style="color: #94a3b8; font-size: 16px; margin-bottom: 24px;">
-                        Hi ${recipientName || 'there'},
-                    </div>
+/**
+ * Template Helper
+ */
+const getHtmlTemplate = (title, message, buttonText, buttonUrl, details = [], seekerName = '') => {
+    const detailRows = details.map(d => `
+        <tr style="border-bottom: 1px solid #edf2f7;">
+            <td style="padding: 10px 0; font-size: 14px; color: #718096; width: 40%; font-weight: bold;">${d.label}</td>
+            <td style="padding: 10px 0; font-size: 14px; color: ${d.color || '#2d3748'}; font-weight: 600;">${d.value}</td>
+        </tr>
+    `).join('');
 
-                    <div style="color: #cbd5e1; line-height: 1.8; font-size: 16px; margin-bottom: 32px;">
-                        ${message}
-                    </div>
-
-                    ${details && details.length > 0 ? `
-                    <div style="background-color: rgba(15, 23, 42, 0.5); border-radius: 20px; padding: 28px; margin-bottom: 36px; border: 1px solid rgba(255,255,255,0.05);">
-                        <table width="100%" style="border-collapse: collapse;">
-                            ${details.map(detail => `
-                            <tr>
-                                <td width="40%" style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${detail.label}</td>
-                                <td width="60%" style="padding: 10px 0; color: ${detail.color || '#f8fafc'}; font-size: 14px; font-weight: 600; text-align: right;">${detail.value}</td>
-                            </tr>
-                            `).join('')}
-                        </table>
-                    </div>
-                    ` : ''}
-
-                    ${btnLink ? `
-                    <div style="text-align: center;">
-                        <a href="${btnLink}" style="display: inline-block; background: linear-gradient(to right, #06b6d4, #3b82f6); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);">
-                            ${btnText}
-                        </a>
-                    </div>
-                    ` : ''}
-                </td>
-            </tr>
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            @media only screen and (max-width: 600px) {
+                .container { width: 100% !important; padding: 10px !important; }
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f7fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7fafc; padding: 40px 0;">
             <tr>
-                <td align="center" style="padding: 32px; background-color: #0f172a; color: #475569; font-size: 12px; font-weight: 500;">
-                    <p style="margin: 0 0 12px 0;">Intelligence applied to your career journey.</p>
-                    <p style="margin: 0;">&copy; ${new Date().getFullYear()} ResumeMatch AI. <a href="${process.env.CLIENT_URL}" style="color: #0ea5e9; text-decoration: none; font-weight: 700;">Visit Platform</a></p>
+                <td align="center">
+                    <table class="container" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); padding: 40px 20px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">ResumeMatch AI</h1>
+                                <p style="color: #e0f2fe; margin-top: 10px; font-size: 14px; letter-spacing: 1px;">Intelligent Career Matching</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 40px 30px;">
+                                <h2 style="color: #1a202c; margin: 0 0 20px 0; font-size: 20px; font-weight: 700;">Hi ${seekerName || 'there'},</h2>
+                                <p style="color: #4a5568; line-height: 1.6; font-size: 16px; margin-bottom: 30px;">
+                                    ${message}
+                                </p>
+
+                                ${details.length > 0 ? `
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                                    ${detailRows}
+                                </table>` : ''}
+
+                                <div style="text-align: center; margin-top: 40px;">
+                                    <a href="${buttonUrl}" style="background-color: #0ea5e9; color: #ffffff; padding: 16px 36px; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 14px; display: inline-block; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);">
+                                        ${buttonText}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 30px; background-color: #f8fafc; text-align: center; border-top: 1px solid #edf2f7;">
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                                    This is an automated notification from ResumeMatch AI.<br/>
+                                    Please do not reply directly to this email.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
-    </div>
-`;
+    </body>
+    </html>`;
+};
+
+/**
+ * Public API
+ */
 
 export const sendStatusUpdateEmail = async (to, seekerName, jobTitle, status, note, replyTo = null) => {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-        console.error('❌ EMAIL ERROR: GMAIL_USER or GMAIL_PASS is missing in .env');
-        return;
-    }
-
     const statusMessages = {
-        applied: `🎉 <strong>Exciting news!</strong> We've officially received your application for <strong>${jobTitle}</strong>. Our team is eager to review your profile and we'll be in touch soon!`,
-        screening: `✨ <strong>Your journey is moving forward!</strong> Great news, ${seekerName}! Your application for <strong>${jobTitle}</strong> has moved into the <strong>Screening</strong> phase. Our hiring team is taking a close look at your impressive background.`,
-        interview: `🎊 <strong>Huge Congratulations!</strong> ${seekerName}, we were so impressed by your profile that we'd love to invite you for an <strong>Interview</strong> for the ${jobTitle} role. Keep an eye on your inbox for a calendar invite!`,
-        offer: `🌈 <strong>Incredible News!</strong> We are absolutely thrilled to let you know that we are preparing a formal <strong>Offer</strong> for you for the ${jobTitle} position. We can't wait to have you on the team!`,
-        rejected: `Thank you so much for the time you spent sharing your experience with us for the ${jobTitle} role. While we've decided to move forward with other candidates at this time, we were genuinely impressed by your skills and wish you the very best in your next adventure.`,
-        withdrawn: `We've successfully updated your records. Your application for ${jobTitle} has been withdrawn as requested. We hope to see you apply for other roles in the future!`
+        applied: `🎉 Great news! You've successfully applied for the position of <strong>${jobTitle}</strong>. We've notified the hiring team.`,
+        screening: `🔍 Your application for <strong>${jobTitle}</strong> is currently being screened by our talent experts.`,
+        interview: `📅 Congratulations! The hiring team for <strong>${jobTitle}</strong> would like to invite you for an interview.`,
+        offer: `✨ Amazing news! An offer has been extended for the <strong>${jobTitle}</strong> role. Check your dashboard!`,
+        rejected: `Thank you for your interest in the <strong>${jobTitle}</strong> position. While we won't be moving forward now, we'll keep your profile for future roles.`,
+        withdrawn: `Your application for <strong>${jobTitle}</strong> has been successfully withdrawn.`
     };
 
-    let fullMessage = statusMessages[status] || `Your application status has been updated to ${status}.`;
-    
     const colors = {
-        applied: '#f59e0b',    // Amber
-        pending: '#f59e0b',
-        screening: '#10b981',  // Emerald
-        interview: '#0ea5e9',  // Blue
-        offer: '#8b5cf6',      // Purple
-        rejected: '#f43f5e',   // Rose
-        withdrawn: '#64748b'   // Slate
+        applied: '#f59e0b', screening: '#10b981', interview: '#0ea5e9',
+        offer: '#8b5cf6', rejected: '#f43f5e', withdrawn: '#64748b'
     };
 
     const statusColor = colors[status] || '#0ea5e9';
+    let messageBody = statusMessages[status] || `Your application status for ${jobTitle} has been updated to "${status}".`;
 
     if (note) {
-        fullMessage += `<br/><br/><div style="padding: 15px; background-color: #f1f5f9; border-left: 4px solid ${statusColor}; color: #334155; font-style: italic;">
-            <strong>Message from Recruiter:</strong><br/>
-            "${note}"
+        messageBody += `<br/><br/><div style="padding: 15px; background-color: #f8fafc; border-left: 4px solid ${statusColor}; color: #334155; font-style: italic;">
+            <strong>Recruiter Message:</strong><br/>"${note}"
         </div>`;
     }
 
-    const seekerDetails = [
-        { label: 'Applicant Name', value: seekerName },
-        { label: 'Target Role', value: jobTitle },
-        { label: 'Current Status', value: status.toUpperCase(), color: statusColor },
-        { label: 'Last Updated', value: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }
+    const details = [
+        { label: 'Position', value: jobTitle },
+        { label: 'New Status', value: status.toUpperCase(), color: statusColor },
+        { label: 'Updated On', value: new Date().toLocaleDateString() }
     ];
 
-    try {
-        const result = await sendViaVercelProxy(to, `Update on your application for ${jobTitle}`, getHtmlTemplate(
-            'Application Update',
-            fullMessage,
-            'View Dashboard',
-            `${process.env.CLIENT_URL}/dashboard`,
-            seekerDetails,
-            seekerName
-        ), replyTo);
-
-        if (result.success) {
-            console.log(`📧 Email delivered to ${to} [Method: ${result.method}] (Status: ${status})`);
-        } else {
-            console.warn(`⚠️ Email delivery skipped/failed for ${to}: ${result.error}`);
-        }
-    } catch (error) {
-        console.error('❌ Outer email wrap failure:', error.message);
-    }
-};
-
-export const queueEmail = async (emailData) => {
-    await sendStatusUpdateEmail(emailData.to, emailData.name, emailData.jobTitle, emailData.status, emailData.note, emailData.replyTo);
+    return sendEmail(to, `Update: ${jobTitle} Application`, getHtmlTemplate(
+        'Application Update', messageBody, 'View Status', `${process.env.CLIENT_URL || 'https://resume-match-ai-phi.vercel.app'}/tracker`, details, seekerName
+    ), replyTo);
 };
 
 export const sendRecruiterEmail = async ({ to, recruiterName, seekerName, jobTitle, event, coverLetter }) => {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-        console.warn('⚠️  Recruiter email skipped: GMAIL credentials missing in .env');
-        return;
-    }
-
     const events = {
         new_application: {
-            subject: `🚀 New Talent Alert: ${seekerName} applied for "${jobTitle}"`,
-            title: `Fresh Application! 🚀`,
-            message: `<strong>Exciting news!</strong> <strong>${seekerName}</strong> has just thrown their hat in the ring for your <strong>${jobTitle}</strong> position.${coverLetter ? `<br/><br/><strong>Personal Note from Candidate:</strong><br/><div style="padding:15px;background:#f8fafc;border-left:4px solid #2563eb;color:#334155;font-style:italic;">"${coverLetter.slice(0, 400)}..."</div>` : '<br/><br/>They haven\'t included a cover letter yet, but their profile is ready for review.'}<br/>Jump into your dashboard to see how our AI ranked this match!`,
-            btnText: 'View Candidate Match',
-        },
-        cover_letter_added: {
-            subject: `📝 Extra Insight: ${seekerName} added a cover letter for "${jobTitle}"`,
-            title: `New Cover Letter! 📝`,
-            message: `<strong>${seekerName}</strong> is going the extra mile! They just added a personalized cover letter to their application for <strong>${jobTitle}</strong>.${coverLetter ? `<br/><br/><div style="padding:15px;background:#f8fafc;border-left:4px solid #2563eb;color:#334155;font-style:italic;">"${coverLetter.slice(0, 400)}..."</div>` : ''}`,
-            btnText: 'Read Full Letter',
+            title: 'New Applicant Detected',
+            msg: `🚀 Exciting news! <strong>${seekerName}</strong> just applied for the <strong>${jobTitle}</strong> position.`
         },
         withdrawal: {
-            subject: `Update: ${seekerName} withdrew from "${jobTitle}"`,
-            title: `Application Update`,
-            message: `Just a heads up that <strong>${seekerName}</strong> has withdrawn their application for the <strong>${jobTitle}</strong> position. Your candidate list has been automatically updated.`,
-            btnText: 'View Dashboard',
-        },
+            title: 'Application Withdrawn',
+            msg: `📢 Heads up! <strong>${seekerName}</strong> has withdrawn their application for the <strong>${jobTitle}</strong> position.`
+        }
     };
 
-    const template = events[event];
-    if (!template || !to) return;
+    const config = events[event] || events.new_application;
+    let finalMsg = config.msg;
 
-    const recruiterDetails = [
-        { label: 'Hiring Manager', value: recruiterName || 'Hiring Team' },
-        { label: 'Candidate Name', value: seekerName },
-        { label: 'Requisition', value: jobTitle },
-        { label: 'Event Type', value: event.replace('_', ' ').toUpperCase() },
-        { label: 'Timestamp', value: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }
+    if (coverLetter) {
+        finalMsg += `<br/><br/><div style="padding: 15px; background-color: #f1f5f9; border-radius: 8px; color: #475569; font-style: italic;">
+            <strong>Candidate Message:</strong><br/>"${coverLetter}"
+        </div>`;
+    }
+
+    const details = [
+        { label: 'Role', value: jobTitle },
+        { label: 'Applicant', value: seekerName },
+        { label: 'Received', value: new Date().toLocaleDateString() }
     ];
 
-    try {
-        const result = await sendViaVercelProxy(to, template.subject, getHtmlTemplate(
-            template.title,
-            template.message,
-            template.btnText,
-            `${process.env.CLIENT_URL}/recruiter/dashboard`,
-            recruiterDetails,
-            recruiterName
-        ));
-        
-        if (result.success) {
-            console.log(`📧 Recruiter Email sent to ${to} [Method: ${result.method}] (Event: ${event})`);
-        } else {
-            console.warn(`⚠️ Recruiter Email skipped/failed for ${to}: ${result.error}`);
-        }
-    } catch (error) {
-        console.error('❌ Outer recruiter email wrap failure:', error.message);
-    }
+    return sendEmail(to, `ResumeMatch AI: ${config.title}`, getHtmlTemplate(
+        config.title, finalMsg, 'Review Candidate', `${process.env.CLIENT_URL || 'https://resume-match-ai-phi.vercel.app'}/recruiter-dashboard`, details, recruiterName
+    ));
+};
+
+export const queueEmail = async (emailData) => {
+    // Direct call for background processing
+    return sendStatusUpdateEmail(emailData.to, emailData.name, emailData.jobTitle, emailData.status, emailData.note, emailData.replyTo);
 };
