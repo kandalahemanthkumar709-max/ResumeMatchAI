@@ -21,12 +21,17 @@ export default async function handler(req, res) {
     }
 
     try {
+        const user = (process.env.GMAIL_USER || '').trim();
+        const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
+
+        if (!user || !pass) {
+            console.error('MISSING CREDENTIALS IN VERCEL DASHBOARD');
+            return res.status(500).json({ success: false, error: 'Email service not configured in Vercel. Please add GMAIL_USER and GMAIL_PASS to Vercel environment variables.' });
+        }
+
         const transporter = nodemailer.createTransport({
             service: 'gmail',
-            auth: {
-                user: process.env.GMAIL_USER.trim(),
-                pass: process.env.GMAIL_PASS.replace(/\s/g, '')
-            }
+            auth: { user, pass }
         });
 
         await transporter.sendMail({
