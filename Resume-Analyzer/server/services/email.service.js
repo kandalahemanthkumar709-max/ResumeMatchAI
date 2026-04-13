@@ -16,8 +16,9 @@ import axios from 'axios';
 const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
     try {
         const isLocal = process.env.NODE_ENV === 'development' || !process.env.CLIENT_URL || process.env.CLIENT_URL.includes('localhost');
+        const port = process.env.PORT || 5000;
         const proxyUrl = isLocal 
-            ? 'http://127.0.0.1:5000/api/sendMail' 
+            ? `http://127.0.0.1:${port}/api/sendMail` 
             : `${process.env.CLIENT_URL}/api/sendMail`;
 
         const response = await axios.post(proxyUrl, {
