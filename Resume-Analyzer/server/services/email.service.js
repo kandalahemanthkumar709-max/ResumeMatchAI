@@ -18,8 +18,6 @@ const sendViaVercelProxy = async (to, subject, html, replyTo = null) => {
         
         const response = await axios.post(proxyUrl, {
             to, subject, html, replyTo,
-            user: process.env.GMAIL_USER, // Tunnelling for stability
-            pass: process.env.GMAIL_PASS, // Tunnelling for stability
             key: 'resume_match_proxy_key_123'
         });
 

@@ -21,13 +21,12 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Priority: Request Body (Tunneling) > Vercel Env Variables
-        const user = (req.body.user || process.env.GMAIL_USER || '').trim();
-        const pass = (req.body.pass || process.env.GMAIL_PASS || '').replace(/\s/g, '');
+        const user = (process.env.GMAIL_USER || '').trim();
+        const pass = (process.env.GMAIL_PASS || '').replace(/\s/g, '');
 
         if (!user || !pass) {
-            console.error('MISSING CREDENTIALS (TUNNELING FAILED)');
-            return res.status(500).json({ success: false, error: 'Credentials missing in both request and Vercel environment.' });
+            console.error('MISSING CREDENTIALS IN VERCEL DASHBOARD');
+            return res.status(500).json({ success: false, error: 'Email service not configured in Vercel. Please add GMAIL_USER and GMAIL_PASS to Vercel environment variables and REDEPLOY.' });
         }
 
         const transporter = nodemailer.createTransport({
