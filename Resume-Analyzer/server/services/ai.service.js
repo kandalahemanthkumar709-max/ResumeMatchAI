@@ -48,7 +48,7 @@ Return JSON including:
                     response_format: { type: 'json_object' },
                     temperature: 0
                 });
-
+ 
                 text = chatCompletion.choices[0]?.message?.content || '';
                 break;
             } catch (err) {

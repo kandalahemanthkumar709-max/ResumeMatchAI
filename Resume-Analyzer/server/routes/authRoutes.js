@@ -1,13 +1,11 @@
 import express from 'express';
-import passport from 'passport';
-import jwt from 'jsonwebtoken';
 import { check } from 'express-validator';
 import { registerUser, loginUser, getMe, updateProfile, sendTestEmail, setRole } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 /**
  * AUTH Routes: The Map of security
- * We'll define which URL does what (Register, Login, Google).
+ * We'll define which URL does what (Register, Login).
  */
 
 const router = express.Router();
@@ -36,30 +34,5 @@ router.get('/me', protect, getMe);
 router.patch('/profile', protect, updateProfile);
 router.post('/test-email', protect, sendTestEmail);
 router.patch('/set-role', protect, setRole);
-
-// ---------------------------------------------------------
-// GOOGLE OAUTH ROUTES
-// ---------------------------------------------------------
-
-// @route   GET /api/auth/google
-// @desc    Start Google Login (Sends user to Google's site)
-// scope: ['profile', 'email'] - We ask Google for their name/pic/email
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-// @route   GET /api/auth/google/callback
-// @desc    Google OAuth Callback (User returns from Google)
-router.get('/google/callback', passport.authenticate('google', { 
-    session: false, // We're using JWT, so no need for server "sessions"
-    failureRedirect: '/login' 
-}), (req, res) => {
-    // 1. Generate a JWT for this user
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    
-    // 2. SMART REDIRECT: Send user to the correct dashboard based on their role
-    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const dynamicPath = req.user.role === 'recruiter' ? '/recruiter/dashboard' : '/dashboard';
-    
-    res.redirect(`${baseUrl}${dynamicPath}?token=${token}`);
-});
 
 export default router;

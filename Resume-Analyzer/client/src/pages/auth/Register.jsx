@@ -59,12 +59,6 @@ export default function Register() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Dynamically choose between production and local API URL
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    window.location.href = `${apiUrl}/api/auth/google`;
-  };
-
   return (
     <div className="min-h-screen relative flex items-center justify-center bg-slate-950 px-6 py-20 overflow-hidden">
       {/* Dynamic Background Accents */}
@@ -190,24 +184,6 @@ export default function Register() {
                 {isLoading ? <Loader2 className="animate-spin" /> : <>Initialize Account</>}
               </button>
             </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase"><span className="px-2 bg-slate-900/40 text-slate-600 tracking-widest leading-[0px]">OR SIGN UP WITH</span></div>
-            </div>
-
-            <button 
-              onClick={handleGoogleLogin}
-              className="w-full py-3.5 bg-slate-950/50 border border-slate-800 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z"/>
-                <path fill="#FBBC05" d="M1.245 6.655A11.934 11.934 0 0 0 0 12c0 1.91.445 3.718 1.245 5.345l4.021-3.11A7.064 7.064 0 0 1 4.909 12c0-1.61.555-3.082 1.482-4.235L1.245 6.655z"/>
-                <path fill="#4285F4" d="M12 24c3.245 0 6.191-1.082 8.418-2.918l-4.109-3.327c-1.145.745-2.618 1.182-4.309 1.182-3.318 0-6.136-2.182-7.145-5.182l-4.021 3.11C3.191 21.309 7.273 24 12 24z"/>
-                <path fill="#34A853" d="M12 4.909c1.327 0 2.536.464 3.473 1.227l3.545-3.545C17.018 1.055 14.7 0 12 0c-3.055 0-5.782 1.145-7.91 3L7.636 6.136C8.645 3.327 11.464 4.909 12 4.909z"/>
-              </svg>
-              Google Account
-            </button>
           </div>
         </div>
 

@@ -23,13 +23,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 import nodemailer from 'nodemailer';
 import { sendStatusUpdateEmail, sendRecruiterEmail } from './services/email.service.js';
 
-import configurePassport from './config/passport.js';
-import passport from 'passport';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
-
-
-// 2. Setup Passport Config
-configurePassport();
 
 // Connect to MongoDB
 connectDB();
@@ -45,7 +39,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://www.google.com", "https://via.placeholder.com", "https://*.googleusercontent.com"],
+      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://via.placeholder.com"],
     },
   },
   crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -80,9 +74,6 @@ app.use('/api', generalLimiter);
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
-
-// Passport middleware
-app.use(passport.initialize());
 
 // ---------------------------------------------------------
 // ROUTES

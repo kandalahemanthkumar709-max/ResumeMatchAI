@@ -26,23 +26,14 @@ const userSchema = new mongoose.Schema({
             'Please add a valid email'
         ]
     },
-    // password: Only required for local login (not for Google login)
+    // password: Required for all accounts
     // select: false - This is a security measure! When we get a user 
     // from the database, Mongoose won't include the password unless we ask for it.
     password: {
         type: String,
-        required: function() { return !this.googleId; }, // Only if Google login isn't used
+        required: [true, 'Please add a password'],
         minlength: 6,
         select: false
-    },
-    // googleId: Stores the unique ID from Google OAuth
-    // unique: true + sparse: true - IMPORTANT! 
-    // This allows multiple users with no Google ID (null/undefined)
-    // while still ensuring one Google account can't be linked to two local accounts.
-    googleId: {
-        type: String,
-        unique: true,
-        sparse: true
     },
     avatar: {
         type: String,
@@ -56,12 +47,6 @@ const userSchema = new mongoose.Schema({
         default: 'seeker'
     },
     isVerified: {
-        type: Boolean,
-        default: false
-    },
-    // needsRoleAssignment: Used specifically for Google OAuth users to 
-    // force them to pick a role on their first login.
-    needsRoleAssignment: {
         type: Boolean,
         default: false
     },
@@ -93,8 +78,6 @@ userSchema.pre('save', async function() {
  * password when they try to log in.
  */
 userSchema.methods.matchPassword = async function(enteredPassword) {
-    // Google-only users have no password — reject email/password login attempts
-    if (!this.password) return false;
     // bcrypt.compare checks if the plain text password matches the hashed one.
     return await bcrypt.compare(enteredPassword, this.password);
 };

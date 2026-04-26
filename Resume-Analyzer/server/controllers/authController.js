@@ -52,19 +52,13 @@ export const loginUser = async (req, res, next) => {
             throw new Error('No account found with this email. Please register first.');
         }
 
-        // Case 2: Account exists but was created via Google OAuth (no password set)
-        if (user.googleId && !user.password) {
-            res.status(401);
-            throw new Error('This account was created with Google Sign-In. Please use the "Continue with Google" button to log in.');
-        }
-
-        // Case 3: Wrong password
+        // Case 2: Wrong password
         if (!(await user.matchPassword(password))) {
             res.status(401);
             throw new Error('Incorrect password. Please try again.');
         }
 
-        // Case 4: Success!
+        // Case 3: Success!
         res.json({
             _id: user._id,
             name: user.name,
@@ -122,7 +116,6 @@ export const setRole = async (req, res, next) => {
         const user = await User.findById(req.user._id);
         if (user) {
             user.role = role;
-            user.needsRoleAssignment = false; // Mark as done!
             await user.save();
             
             res.json({

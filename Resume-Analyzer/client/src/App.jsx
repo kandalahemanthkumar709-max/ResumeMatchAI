@@ -34,17 +34,7 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // 1. Check if we just returned from Google OAuth (Token in URL)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
-
-    if (tokenFromUrl) {
-      localStorage.setItem('token', tokenFromUrl);
-      // Clean up the URL so the token isn't visible in the bar
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // 2. Load user if token exists (either from URL or existing)
+    // Load user if token exists in localStorage
     if (localStorage.getItem('token')) {
       dispatch(loadUser());
     }

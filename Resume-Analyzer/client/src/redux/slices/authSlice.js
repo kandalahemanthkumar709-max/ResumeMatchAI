@@ -49,13 +49,11 @@ export const setRole = createAsyncThunk(
     }
 );
 
-const hasUrlToken = typeof window !== 'undefined' && window.location.search.includes('token=');
-
 const initialState = {
     token: localStorage.getItem('token'),
     user: null,
     isAuthenticated: false,
-    isLoading: !!localStorage.getItem('token') || hasUrlToken, // Wait if token is coming from URL
+    isLoading: !!localStorage.getItem('token'),
     error: null,
 };
 
@@ -144,8 +142,7 @@ const authSlice = createSlice({
             state.token = action.payload.token;
             state.user = { 
                 ...state.user, 
-                role: action.payload.role, 
-                needsRoleAssignment: false 
+                role: action.payload.role
             };
             state.isLoading = false;
         });
