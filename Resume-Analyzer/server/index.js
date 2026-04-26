@@ -157,7 +157,7 @@ const clientBuildPath = path.resolve(__dirname, '../../client/dist');
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(clientBuildPath));
-    app.get('*', (req, res, next) => {
+    app.get('*splat', (req, res, next) => {
         if (req.originalUrl.startsWith('/api')) return next();
         res.sendFile(path.join(clientBuildPath, 'index.html'));
     });
