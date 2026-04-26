@@ -130,20 +130,36 @@ app.patch('/api/notifications/mark-all-read', protect, async (req, res) => {
     res.json({ success: true, message: 'All notifications marked as read.' });
 });
 
+app.patch('/api/notifications/:id/read', protect, async (req, res) => {
+    const notification = await Notification.findOneAndUpdate(
+        { _id: req.params.id, userId: req.user._id },
+        { isRead: true },
+        { returnDocument: 'after' }
+    );
+    res.json(notification);
+});
+
+app.delete('/api/notifications/:id', protect, async (req, res) => {
+    await Notification.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    res.json({ success: true });
+});
+
+
 // ---------------------------------------------------------
 // Server Static Files
 // ---------------------------------------------------------
-const currentDir = process.cwd();
-// If we are running inside the 'server' directory, we need to go up one level to find 'client'
-const clientBuildPath = currentDir.endsWith('server') 
-    ? path.join(currentDir, '..', 'client', 'dist') 
-    : path.join(currentDir, 'client', 'dist');
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This points to the sibling 'client/dist' folder regardless of CWD
+const clientBuildPath = path.resolve(__dirname, '../../client/dist');
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(clientBuildPath));
-    app.use((req, res, next) => {
+    app.get('*', (req, res, next) => {
         if (req.originalUrl.startsWith('/api')) return next();
-        res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
     });
 } else {
     app.get('/', (req, res) => res.json({ message: "Welcome to ResumeMatch AI API" }));
