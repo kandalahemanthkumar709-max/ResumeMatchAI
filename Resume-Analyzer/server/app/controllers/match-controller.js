@@ -1,7 +1,7 @@
-import Job from '../models/Job.js';
-import Resume from '../models/Resume.js';
-import { getOrCreateMatch } from '../services/matching.service.js';
-import { generateCoverLetter } from '../services/ai.service.js';
+import Job from '../models/job-model.js';
+import Resume from '../models/resume-model.js';
+import { getOrCreateMatch } from '../../services/matching.service.js';
+import { generateCoverLetter } from '../../services/ai.service.js';
 
 /**
  * MATCH CONTROLLER — Orchestrates the matching logic

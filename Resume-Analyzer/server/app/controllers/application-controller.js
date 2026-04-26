@@ -1,7 +1,7 @@
-import Application from '../models/Application.js';
-import Job from '../models/Job.js';
-import Notification from '../models/Notification.js';
-import { queueEmail, sendRecruiterEmail } from '../services/email.service.js';
+import Application from '../models/application-model.js';
+import Job from '../models/job-model.js';
+import Notification from '../models/notification-model.js';
+import { queueEmail, sendRecruiterEmail } from '../../services/email.service.js';
 
 // @route   POST /api/applications
 // @desc    Apply to a specific job

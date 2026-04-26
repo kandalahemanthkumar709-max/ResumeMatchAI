@@ -6,7 +6,7 @@ export const loadUser = createAsyncThunk(
     'auth/loadUser',
     async (_, { rejectWithValue }) => {
         try {
-            const res = await axios.get('/api/auth/me');
+            const res = await axios.get('/api/auth/account');
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || 'Failed to load user');

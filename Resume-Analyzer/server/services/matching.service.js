@@ -1,6 +1,6 @@
-import MatchCache from '../models/MatchCache.js';
-import Resume from '../models/Resume.js';
-import Job from '../models/Job.js';
+import MatchCache from '../app/models/match-cache-model.js';
+import Resume from '../app/models/resume-model.js';
+import Job from '../app/models/job-model.js';
 import { generateMatchReasoning } from './ai.service.js';
 
 /**

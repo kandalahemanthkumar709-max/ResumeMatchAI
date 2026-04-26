@@ -46,7 +46,10 @@ export default function Login() {
       // 3. ERROR! Deep-dig for the actual message string
       console.error('Login Error:', err);
       // Dig into different possible formats (Redux payload, Axios response, or string)
-      const errorMessage = err?.data?.message || err?.message || err?.error || (typeof err === 'string' ? err : 'Login failed. Please try again.');
+      const errorMessage = 
+        (err?.data?.errors && Array.isArray(err.data.errors) ? err.data.errors.join(', ') : null) || 
+        err?.data?.message || err?.message || err?.error || 
+        (typeof err === 'string' ? err : 'Login failed. Please try again.');
       setError(errorMessage);
     } finally {
       setIsLoading(false);

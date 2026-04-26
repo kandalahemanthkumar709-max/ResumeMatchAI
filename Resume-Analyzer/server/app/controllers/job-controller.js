@@ -1,5 +1,6 @@
-import Job from '../models/Job.js';
-import { structureJobDescription } from '../services/ai.service.js';
+import Job from '../models/job-model.js';
+import { structureJobDescription } from '../../services/ai.service.js';
+import { jobSchema } from '../validators/job-validator.js';
 
 /**
  * JOB CONTROLLER — Business logic for all job operations
@@ -21,16 +22,16 @@ import { structureJobDescription } from '../services/ai.service.js';
 // ─── POST /api/jobs ───────────────────────────────────────────────────────────
 export const createJob = async (req, res, next) => {
     try {
+        const { error } = jobSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({ errors: error.details.map(d => d.message) });
+        }
+
         const {
             title, company, companyLogo, location, locationType,
             description, requirements, salary, jobType, expiresAt,
             education_required
         } = req.body;
-
-        if (!title || !company || !description) {
-            res.status(400);
-            throw new Error('Title, company, and description are required.');
-        }
 
         // Duplicate Prevention: Check if this recruiter already has an active job with the same title
         const existingJob = await Job.findOne({
@@ -182,8 +183,8 @@ export const getAllJobs = async (req, res, next) => {
         let jobsWithMatches = jobs.map(j => j.toObject());
         if (req.user && req.user.role === 'seeker') {
             try {
-                const { getOrCreateMatch } = await import('../services/matching.service.js');
-                const { default: Resume } = await import('../models/Resume.js');
+                const { getOrCreateMatch } = await import('../../services/matching.service.js');
+                const { default: Resume } = await import('../models/resume-model.js');
                 const defResume = await Resume.findOne({ userId: req.user._id, isDefault: true }) || await Resume.findOne({ userId: req.user._id });
                 
                 if (defResume) {
@@ -363,7 +364,7 @@ export const getMyJobs = async (req, res, next) => {
         // We need today's applications — query Application model
         let todayApps = 0;
         try {
-            const Application = (await import('../models/Application.js')).default;
+            const Application = (await import('../models/application-model.js')).default;
             todayApps = await Application.countDocuments({
                 jobId: { $in: jobs.map(j => j._id) },
                 appliedAt: { $gte: todayStart }

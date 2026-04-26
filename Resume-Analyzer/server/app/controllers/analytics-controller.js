@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
-import Application from '../models/Application.js';
-import Job from '../models/Job.js';
-import Resume from '../models/Resume.js';
-import MatchCache from '../models/MatchCache.js';
-import catchAsync from '../utils/catchAsync.js';
-import AppError from '../utils/AppError.js';
+import Application from '../models/application-model.js';
+import Job from '../models/job-model.js';
+import Resume from '../models/resume-model.js';
+import MatchCache from '../models/match-cache-model.js';
+import catchAsync from '../../utils/catchAsync.js';
+import AppError from '../../utils/AppError.js';
 
 // ─── SEEKER ANALYTICS (Aggregations) ──────────────────────────────────────────
 

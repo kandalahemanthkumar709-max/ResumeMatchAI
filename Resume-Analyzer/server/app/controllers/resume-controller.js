@@ -1,7 +1,7 @@
-import Resume from '../models/Resume.js';
-import { parseResume } from '../services/parser.service.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
-import analyzeResume from '../utils/groqAI.js';
+import Resume from '../models/resume-model.js';
+import { parseResume } from '../../services/parser.service.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../../config/cloudinary.js';
+import analyzeResume from '../../utils/groqAI.js';
 
 /**
  * RESUME CONTROLLER — All business logic for resume operations

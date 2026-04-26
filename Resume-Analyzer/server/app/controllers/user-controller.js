@@ -1,7 +1,7 @@
-import User from '../models/User.js';
+import User from '../models/user-model.js';
 import jwt from 'jsonwebtoken';
-import { validationResult } from 'express-validator';
-import { queueEmail } from '../services/email.service.js';
+import { userRegistrationSchema, userLoginSchema } from '../validators/user-validator.js';
+import { queueEmail } from '../../services/email.service.js';
 
 /**
  * UTILS: Generate JWT Token
@@ -13,11 +13,11 @@ const generateToken = (id) => {
 }
 
 // @route   POST /api/auth/register
-export const registerUser = async (req, res, next) => {
+export const register = async (req, res, next) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+        const { error } = userRegistrationSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({ errors: error.details.map(d => d.message) });
         }
         const { name, email, password, role } = req.body;
         const userExists = await User.findOne({ email });
@@ -41,8 +41,12 @@ export const registerUser = async (req, res, next) => {
 }
 
 // @route   POST /api/auth/login
-export const loginUser = async (req, res, next) => {
+export const login = async (req, res, next) => {
     try {
+        const { error } = userLoginSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({ errors: error.details.map(d => d.message) });
+        }
         const { email, password } = req.body;
         const user = await User.findOne({ email }).select('+password');
 
@@ -72,7 +76,7 @@ export const loginUser = async (req, res, next) => {
 }
 
 // @route   GET /api/auth/me
-export const getMe = async (req, res, next) => {
+export const account = async (req, res, next) => {
     try {
         res.json(req.user);
     } catch (error) {
