@@ -153,7 +153,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // This points to the sibling 'client/dist' folder regardless of CWD
-const clientBuildPath = path.resolve(__dirname, '../../client/dist');
+const clientBuildPath = path.resolve(__dirname, '../client/dist');
+console.log('Production: Serving static files from:', clientBuildPath);
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(clientBuildPath));
