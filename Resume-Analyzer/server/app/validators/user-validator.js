@@ -13,6 +13,10 @@ export const userRegistrationSchema = Joi.object({
         'string.empty': 'Password is required',
         'string.min': 'Password must be at least 6 characters'
     }),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+        'any.only': 'Passwords do not match',
+        'string.empty': 'Confirm password is required'
+    }),
     role: Joi.string().valid('seeker', 'recruiter').required().messages({
         'any.only': 'Role must be Seeker or Recruiter'
     })
