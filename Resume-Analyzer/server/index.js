@@ -130,12 +130,17 @@ app.patch('/api/notifications/mark-all-read', protect, async (req, res) => {
 // ---------------------------------------------------------
 // Server Static Files
 // ---------------------------------------------------------
-const rootDir = process.cwd();
+const currentDir = process.cwd();
+// If we are running inside the 'server' directory, we need to go up one level to find 'client'
+const clientBuildPath = currentDir.endsWith('server') 
+    ? path.join(currentDir, '..', 'client', 'dist') 
+    : path.join(currentDir, 'client', 'dist');
+
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(rootDir, 'client/dist')));
+    app.use(express.static(clientBuildPath));
     app.use((req, res, next) => {
         if (req.originalUrl.startsWith('/api')) return next();
-        res.sendFile(path.resolve(rootDir, 'client', 'dist', 'index.html'));
+        res.sendFile(path.resolve(clientBuildPath, 'index.html'));
     });
 } else {
     app.get('/', (req, res) => res.json({ message: "Welcome to ResumeMatch AI API" }));
